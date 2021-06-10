@@ -76,6 +76,7 @@ export default class JitsiStreamBackgroundEffect {
      * @returns {void}
      */
     runPostProcessing() {
+        this._outputCanvasCtx.clearRect(0, 0, this._inputVideoElement.width, this._inputVideoElement.height);
         this._outputCanvasCtx.globalCompositeOperation = 'copy';
 
         // Draw segmentation mask.
@@ -87,7 +88,7 @@ export default class JitsiStreamBackgroundEffect {
         } else {
             this._outputCanvasCtx.filter = 'blur(8px)';
         }
-
+        
         this._outputCanvasCtx.drawImage(
             this._segmentationMaskCanvas,
             0,
@@ -102,15 +103,22 @@ export default class JitsiStreamBackgroundEffect {
         this._outputCanvasCtx.globalCompositeOperation = 'source-in';
         this._outputCanvasCtx.filter = 'none';
 
-        // Draw the foreground video.
+        // Draw the foreground video. //background
         //
-
+        this._outputCanvasCtx.filter = `blur(5px) brightness(10%)`;
         this._outputCanvasCtx.drawImage(this._inputVideoElement, 0, 0);
-
-        // Draw the background.
-        //
-
+        
+        // Draw the background. //forground
+        
         this._outputCanvasCtx.globalCompositeOperation = 'destination-over';
+        
+        this._outputCanvasCtx.rect(0,0,
+                this._inputVideoElement.width,
+                this._inputVideoElement.height
+            );
+        this._outputCanvasCtx.filter = 'brightness(120%)'
+        this._outputCanvasCtx.fillStyle = 'red';
+        this._outputCanvasCtx.fill();
         if (this._options.virtualBackground.backgroundType === 'image') {
             this._outputCanvasCtx.drawImage(
                 this._virtualImage,
@@ -120,8 +128,14 @@ export default class JitsiStreamBackgroundEffect {
                 this._inputVideoElement.height
             );
         } else {
-            this._outputCanvasCtx.filter = `blur(${this._options.virtualBackground.blurValue}px)`;
+            this._outputCanvasCtx.globalCompositeOperation = 'screen';
+
+            this._outputCanvasCtx.filter = 'none';
+            this._outputCanvasCtx.filter = `blur(15px) grayscale(100%)`;
+            // this._outputCanvasCtx.filter = `blur(${this._options.ffvirtualBackground.blurValue}px)`;
             this._outputCanvasCtx.drawImage(this._inputVideoElement, 0, 0);
+            // this._outputCanvasCtx.drawImage(this._segmentationMaskCanvas, 0, 0);
+    
         }
     }
 
@@ -135,8 +149,10 @@ export default class JitsiStreamBackgroundEffect {
         const outputMemoryOffset = this._model._getOutputMemoryOffset() / 4;
 
         for (let i = 0; i < this._segmentationPixelCount; i++) {
-            const background = this._model.HEAPF32[outputMemoryOffset + (i * 2)];
-            const person = this._model.HEAPF32[outputMemoryOffset + (i * 2) + 1];
+            const background = this._model.HEAPF32[outputMemoryOffset + (i * 2) + 1];
+            const person =  this._model.HEAPF32[outputMemoryOffset + (i * 2)];
+            // const background = this._model.HEAPF32[outputMemoryOffset + (i * 2)];
+            // const person = this._model.HEAPF32[outputMemoryOffset + (i * 2) + 1];
             const shift = Math.max(background, person);
             const backgroundExp = Math.exp(background - shift);
             const personExp = Math.exp(person - shift);

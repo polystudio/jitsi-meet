@@ -14,6 +14,7 @@ STYLES_BUNDLE = css/all.bundle.css
 STYLES_DESTINATION = css/all.css
 STYLES_MAIN = css/main.scss
 WEBPACK = ./node_modules/.bin/webpack
+#WEBPACK_DEV_SERVER = node --max-old-space-size=8192 node_modules/webpack-dev-server/bin/webpack-dev-server.js
 WEBPACK_DEV_SERVER = ./node_modules/.bin/webpack-dev-server
 
 all: compile deploy clean
@@ -100,7 +101,9 @@ deploy-local:
 
 .NOTPARALLEL:
 dev: deploy-init deploy-css deploy-rnnoise-binary deploy-tflite deploy-meet-models deploy-lib-jitsi-meet deploy-libflac deploy-olm
-	$(WEBPACK_DEV_SERVER) --detect-circular-deps
+	$(WEBPACK_DEV_SERVER) --detect-circular-deps --host 0.0.0.0 --port 8080
+# node --max-old-space-size=8192 node_modules/webpack-dev-server/bin/webpack-dev-server.js --detect-circular-deps --host 0.0.0.0 --port 8080
+# $(WEBPACK_DEV_SERVER) --detect-circular-deps --host 0.0.0.0 --port 8080
 
 source-package:
 	mkdir -p source_package/jitsi-meet/css && \
@@ -113,4 +116,9 @@ docker-build:
 	docker build -t poly-jitsi .
 
 docker-run:
-	docker run --rm -it --name poly-jitsi-test poly-jitsi /bin/bash
+	docker run --rm -it \
+	--publish 3000:8080 \
+	--publish 1022:22 \
+	--name poly-jitsi-test \
+	-v $(pwd):/home/poly/jitsi-poly \
+	poly-jitsi /bin/bash
