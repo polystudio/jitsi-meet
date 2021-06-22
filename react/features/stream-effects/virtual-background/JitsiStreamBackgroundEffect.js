@@ -99,6 +99,7 @@ export default class JitsiStreamBackgroundEffect {
             this._inputVideoElement.width,
             this._inputVideoElement.height
         );
+	    /*
         this._outputCanvasCtx.globalCompositeOperation = 'source-in';
         this._outputCanvasCtx.filter = 'none';
 
@@ -122,7 +123,7 @@ export default class JitsiStreamBackgroundEffect {
         } else {
             this._outputCanvasCtx.filter = `blur(${this._options.virtualBackground.blurValue}px)`;
             this._outputCanvasCtx.drawImage(this._inputVideoElement, 0, 0);
-        }
+        } */
     }
 
     /**
