@@ -88,6 +88,7 @@ export default class JitsiStreamBackgroundEffect {
             this._outputCanvasCtx.filter = 'blur(8px)';
         }
 
+
         this._outputCanvasCtx.drawImage(
             this._segmentationMaskCanvas,
             0,
@@ -107,7 +108,7 @@ export default class JitsiStreamBackgroundEffect {
         //
 
         this._outputCanvasCtx.drawImage(this._inputVideoElement, 0, 0);
-
+*/
         // Draw the background.
         //
 
@@ -123,7 +124,7 @@ export default class JitsiStreamBackgroundEffect {
         } else {
             this._outputCanvasCtx.filter = `blur(${this._options.virtualBackground.blurValue}px)`;
             this._outputCanvasCtx.drawImage(this._inputVideoElement, 0, 0);
-        } */
+        }
     }
 
     /**
