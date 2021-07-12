@@ -12,28 +12,28 @@ var config = {
         // anonymousdomain: 'guest.example.com',
 
         // Domain for authenticated users. Defaults to <domain>.
-        // authdomain: 'jitsi-meet.example.com',
+        // authdomain: 'meet.polystudio.io',
 
         // Focus component domain. Defaults to focus.<domain>.
-        // focus: 'focus.jitsi-meet.example.com',
+        // focus: 'focus.meet.polystudio.io',
 
         // XMPP MUC domain. FIXME: use XEP-0030 to discover it.
-        muc: 'conference.meet.polystudio.io'
+        muc: 'conference.<!--# echo var="subdomain" default="" -->meet.polystudio.io'
     },
 
     // BOSH URL. FIXME: use XEP-0156 to discover it.
     bosh: '//meet.polystudio.io/http-bind',
 
     // Websocket URL
-    // websocket: 'wss://jitsi-meet.example.com/xmpp-websocket',
+    // websocket: 'wss://meet.polystudio.io/xmpp-websocket',
 
     // The name of client node advertised in XEP-0115 'c' stanza
-    clientNode: 'http://meet.polystudio.io/jitsimeet',
+    clientNode: 'http://jitsi.org/jitsimeet',
 
     // The real JID of focus participant - can be overridden here
     // Do not change username - FIXME: Make focus username configurable
     // https://github.com/jitsi/jitsi-meet/issues/7376
-    // focusUserJid: 'focus@auth.jitsi-meet.example.com',
+    // focusUserJid: 'focus@auth.meet.polystudio.io',
 
 
     // Testing / experimental features.
@@ -81,6 +81,9 @@ var config = {
 
     // Media
     //
+
+    // Enable unified plan implementation support on Chromium based browsers.
+    // enableUnifiedOnChrome: false,
 
     // Audio
 
@@ -182,10 +185,10 @@ var config = {
     // Desktop sharing
 
     // Optional desktop sharing frame rate options. Default value: min:5, max:5.
-    // desktopSharingFrameRate: {
-    //     min: 5,
-    //     max: 5
-    // },
+     desktopSharingFrameRate: {
+         min: 5,
+         max: 15
+     },
 
     // Try to start calls with screen-sharing instead of camera video.
     // startScreenSharing: false,
@@ -199,9 +202,9 @@ var config = {
     //     appKey: '<APP_KEY>' // Specify your app key here.
     //     // A URL to redirect the user to, after authenticating
     //     // by default uses:
-    //     // 'https://jitsi-meet.example.com/static/oauth.html'
+    //     // 'https://meet.polystudio.io/static/oauth.html'
     //     redirectURI:
-    //          'https://jitsi-meet.example.com/subfolder/static/oauth.html'
+    //          'https://meet.polystudio.io/subfolder/static/oauth.html'
     // },
     // When integrations like dropbox are enabled only that will be shown,
     // by enabling fileRecordingsServiceEnabled, we show both the integrations
@@ -368,10 +371,10 @@ var config = {
     // disableResponsiveTiles: false,
 
     // Hides lobby button
-    // hideLobbyButton: false,
+    hideLobbyButton: true,
 
     // Require users to always specify a display name.
-    // requireDisplayName: true,
+    requireDisplayName: true,
 
     // Whether to use a welcome page or not. In case it's false a random room
     // will be joined when no room is specified.
@@ -392,7 +395,7 @@ var config = {
     // disable1On1Mode: false,
 
     // Default language for the user interface.
-    // defaultLanguage: 'en',
+    defaultLanguage: 'ko',
 
     // Disables profile and the edit of all fields from the profile settings (display name and email)
     // disableProfile: false,
@@ -413,7 +416,7 @@ var config = {
     // enableCalendarIntegration: false,
 
     // When 'true', it shows an intermediate page before joining, where the user can configure their devices.
-    prejoinPageEnabled: true,
+     prejoinPageEnabled: true,
 
     // If etherpad integration is enabled, setting this to true will
     // automatically open the etherpad when a participant joins.  This
@@ -535,7 +538,7 @@ var config = {
         // The STUN servers that will be used in the peer to peer connections
         stunServers: [
 
-            // { urls: 'stun:jitsi-meet.example.com:3478' },
+            // { urls: 'stun:meet.polystudio.io:3478' },
             { urls: 'stun:meet-jit-si-turnrelay.jitsi.net:443' }
         ]
     },
@@ -644,7 +647,7 @@ var config = {
 
     // If true, any checks to handoff to another application will be prevented
     // and instead the app will continue to display in the current browser.
-    // disableDeepLinking: false,
+    disableDeepLinking: true,
 
     // A property to disable the right click context menu for localVideo
     // the menu has option to flip the locally seen video for local presentations
@@ -712,7 +715,7 @@ var config = {
     // The URL of the moderated rooms microservice, if available. If it
     // is present, a link to the service will be rendered on the welcome page,
     // otherwise the app doesn't render it.
-    // moderatedRoomServiceUrl: 'https://moderated.jitsi-meet.example.com',
+    // moderatedRoomServiceUrl: 'https://moderated.meet.polystudio.io',
 
     // If true, tile view will not be enabled automatically when the participants count threshold is reached.
     // disableTileView: true,

@@ -29,7 +29,7 @@
     }
 
     .action-btn {
-        border-radius: 3px;
+        border-radius: 0px;
         color: #fff;
         cursor: pointer;
         display: inline-block;
@@ -42,8 +42,8 @@
         width: 286px;
 
         &.primary {
-            background: #0376DA;
-            border: 1px solid #0376DA;
+            background: #ae18f4;
+            border: 1px solid #8115b3;
         }
 
         &.secondary {
@@ -72,7 +72,7 @@
         }
 
         .options {
-            border-radius: 3px;
+            border-radius: 0px;
             align-items: center;
             display: flex;
             height: 100%;
@@ -83,7 +83,7 @@
             width: 36px;
 
             &:hover {
-                background-color: #0262B6;
+                background-color: #7d02b6;
             }
 
             svg {
@@ -122,7 +122,7 @@
 
             .url {
                 background: rgba(28, 32, 37, 0.5);
-                border-radius: 4px;
+                border-radius: 0px;
                 display: flex;
                 padding: 8px 10px;
                 transition: background 0.16s ease-out;
@@ -164,7 +164,7 @@
             background-color: white;
             border: none;
             outline: none;
-            border-radius: 3px;
+            border-radius: 0px;
             font-size: 15px;
             line-height: 24px;
             color: #1C2025;
@@ -177,7 +177,7 @@
             }
 
             &.focused {
-                box-shadow: 0px 0px 4px 3px #0376DA;
+                box-shadow: 0px 0px 4px 3px #8b03da;
             }
         }
     }
@@ -234,7 +234,7 @@
 }
 
 .toggle-button {
-    border-radius: 3px;
+    border-radius: 0px;
     cursor: pointer;
     color: #fff;
     font-size: 13px;

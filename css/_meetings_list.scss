@@ -34,7 +34,7 @@
 
     .meetings-list-empty-button {
         align-items: center;
-        color: #0163FF;
+        color: #d501ff;
         cursor: pointer;
         display: flex;
         font-size: 14px;
@@ -48,8 +48,8 @@
     }
 
     .button {
-        background: #0074E0;
-        border-radius: 4px;
+        background: #d501ff;
+        border-radius: 0px;
         color: #FFFFFF;
         display: flex;
         justify-content: center;
@@ -67,7 +67,7 @@
     .item {
         background: #fff;
         box-sizing: border-box;
-        border-radius: 4px;
+        border-radius: 0px;
         display: inline-flex;
         margin: 4px 4px 0 4px;
         min-height: 60px;
@@ -126,7 +126,7 @@
         }
 
         &.with-click-handler:hover {
-            background-color: #c7ddff;
+            background-color: #f6c7ff;
         }
 
         .add-button {
@@ -154,7 +154,7 @@
         position: absolute;
 
         &> svg {
-            fill: #0074e0;
+            fill: #cd00e0;
         }
     }
 
