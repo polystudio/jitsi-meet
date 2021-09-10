@@ -3,6 +3,16 @@
     &-input-area {
         margin: 0 auto;
         text-align: center;
+        white-space: nowrap;
+    }
+    
+    &-message-area {
+        margin-bottom: 10px;
+        text-align: center;
+    }
+
+    &-message-text {
+        white-space: pre-wrap;
     }
 
     &-title {

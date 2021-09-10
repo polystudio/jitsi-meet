@@ -321,6 +321,10 @@ class Prejoin extends Component<Props, State> {
                 visibleButtons = { visibleButtons }>
                 {showJoinActions && (
                     <div className = 'prejoin-input-area-container'>
+                        <div className='prejoin-message-area'>
+                            <span className='prejoin-message-text'>
+                        { t('prejoin.notEntered') }</span>
+                        </div>
                         <div className = 'prejoin-input-area'>
                             <InputField
                                 autoFocus = { true }
@@ -348,6 +352,7 @@ class Prejoin extends Component<Props, State> {
                                                 src = { IconVolumeOff } />
                                             { t('prejoin.joinWithoutAudio') }
                                         </div>
+                                        
                                         {hasJoinByPhoneButton && <div
                                             className = 'prejoin-preview-dropdown-btn'
                                             onClick = { _showDialog }>
