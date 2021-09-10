@@ -51,8 +51,9 @@ function getBundleAnalyzerPlugin(name) {
 // jitsi-meet such as app.bundle.js and external_api.js.
 const config = {
     devServer: {
-        https: true,
-        host: '127.0.0.1',
+        https: false,
+        disableHostCheck: true, //얘는 추가해줘야함
+        host: '0.0.0.0',
         inline: true,
         proxy: {
             '/': {

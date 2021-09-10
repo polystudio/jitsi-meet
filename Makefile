@@ -13,7 +13,7 @@ OUTPUT_DIR = .
 STYLES_BUNDLE = css/all.bundle.css
 STYLES_DESTINATION = css/all.css
 STYLES_MAIN = css/main.scss
-WEBPACK = ./node_modules/.bin/webpack
+WEBPACK = ./node_modules/.bin/webpack 
 WEBPACK_DEV_SERVER = ./node_modules/.bin/webpack-dev-server
 
 all: compile deploy clean
@@ -100,7 +100,7 @@ deploy-local:
 
 .NOTPARALLEL:
 dev: deploy-init deploy-css deploy-rnnoise-binary deploy-tflite deploy-meet-models deploy-lib-jitsi-meet deploy-libflac deploy-olm
-	$(WEBPACK_DEV_SERVER) --detect-circular-deps --host 0.0.0.0 --port 80
+	$(WEBPACK_DEV_SERVER) --detect-circular-deps --host 0.0.0.0 --port 3000
 
 source-package:
 	mkdir -p source_package/jitsi-meet/css && \
