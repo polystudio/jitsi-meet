@@ -64,17 +64,25 @@ export default class JitsiStreamBackgroundEffect {
         this._inputVideoElement = document.createElement('video');
 
         this._threeScene = new THREE.Scene();
+        this._threeScene.background = new THREE.Color( 0xff0000 );
         this._threeCamera = new THREE.PerspectiveCamera( 75, window.innerWidth / window.innerHeight, 0.1, 1000);
         this._threeRenderer = new THREE.WebGLRenderer({ canvas: this._outputCanvasElement});
 
         this._threeRenderer.setSize( window.innerWidth, window.innerHeight);
+        
          
-        const geometry = new THREE.BoxGeometry();
+        // const geometry = new THREE.PlaneGeometry(10,5);
+        const geometry = new THREE.BoxGeometry(2,2,2);
+        // const videoTexture = new THREE.VideoTexture(this._inputVideoElement);
+        // const videoMeterial = new THREE.MeshBasicMaterial( {map: videoTexture, transparent: false, side: THREE.FrontSide});
         const meterial = new THREE.MeshBasicMaterial( {color: 0x00ff00});
+        // this._threeGeometry = new THREE.Mesh( geometry, videoMeterial);
         this._threeGeometry = new THREE.Mesh( geometry, meterial);
-
+        const axesHelper = new THREE.AxesHelper( 2 );
         this._threeScene.add(this._threeGeometry);
+        this._threeScene.add(axesHelper);
         this._threeCamera.position.z = 5;
+
 
     }
 
@@ -99,8 +107,8 @@ export default class JitsiStreamBackgroundEffect {
      */
     _renderCircle(){
 
-        this._threeGeometry.rotation.x += 0.01;
-        this._threeGeometry.rotation.y += 0.01;
+        this._threeGeometry.rotation.x += 0.03;
+        // this._threeGeometry.rotation.y += 0.03;
         this._threeRenderer.render(this._threeScene, this._threeCamera);
 
         this._maskFrameTimerWorker.postMessage({
