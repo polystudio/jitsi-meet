@@ -6,6 +6,9 @@ import {
     timerWorkerScript
 } from './TimerWorker';
 
+import * as THREE from 'three';
+import { Scene } from 'three';
+
 /**
  * Represents a modified MediaStream that adds effects to video background.
  * <tt>JitsiStreamBackgroundEffect</tt> does the processing of the original
@@ -28,6 +31,10 @@ export default class JitsiStreamBackgroundEffect {
     isEnabled: Function;
     startEffect: Function;
     stopEffect: Function;
+    _threeScene: THREE.Scene;
+    _threeCamera: THREE.Camera;
+    _threeRenderer: THREE.WebGLRenderer;
+    _threeGeometry: THREE.Mesh;
 
     /**
      * Represents a modified video MediaStream track.
@@ -53,8 +60,22 @@ export default class JitsiStreamBackgroundEffect {
 
         // Workaround for FF issue https://bugzilla.mozilla.org/show_bug.cgi?id=1388974
         this._outputCanvasElement = document.createElement('canvas');
-        this._outputCanvasElement.getContext('2d');
+        // this._outputCanvasElement.getContext('2d');
         this._inputVideoElement = document.createElement('video');
+
+        this._threeScene = new THREE.Scene();
+        this._threeCamera = new THREE.PerspectiveCamera( 75, window.innerWidth / window.innerHeight, 0.1, 1000);
+        this._threeRenderer = new THREE.WebGLRenderer({ canvas: this._outputCanvasElement});
+
+        this._threeRenderer.setSize( window.innerWidth, window.innerHeight);
+         
+        const geometry = new THREE.BoxGeometry();
+        const meterial = new THREE.MeshBasicMaterial( {color: 0x00ff00});
+        this._threeGeometry = new THREE.Mesh( geometry, meterial);
+
+        this._threeScene.add(this._threeGeometry);
+        this._threeCamera.position.z = 5;
+
     }
 
     /**
@@ -66,9 +87,28 @@ export default class JitsiStreamBackgroundEffect {
      */
     _onMaskFrameTimer(response: Object) {
         if (response.data.id === TIMEOUT_TICK) {
-            this._renderMask();
+            // this._renderMask();
+            this._renderCircle();
         }
     }
+
+    /**
+     * Represents the run Tensorflow Interference.
+     *
+     * @returns {void}
+     */
+    _renderCircle(){
+
+        this._threeGeometry.rotation.x += 0.01;
+        this._threeGeometry.rotation.y += 0.01;
+        this._threeRenderer.render(this._threeScene, this._threeCamera);
+
+        this._maskFrameTimerWorker.postMessage({
+            id: SET_TIMEOUT,
+            timeMs: 1000 / 30
+        });
+    }
+
 
     /**
      * Represents the run post processing.
@@ -231,7 +271,7 @@ export default class JitsiStreamBackgroundEffect {
 
         this._outputCanvasElement.width = parseInt(width, 10);
         this._outputCanvasElement.height = parseInt(height, 10);
-        this._outputCanvasCtx = this._outputCanvasElement.getContext('2d');
+        // this._outputCanvasCtx = this._outputCanvasElement.getContext('2d');
         this._inputVideoElement.width = parseInt(width, 10);
         this._inputVideoElement.height = parseInt(height, 10);
         this._inputVideoElement.autoplay = true;
