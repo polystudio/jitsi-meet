@@ -62,9 +62,6 @@ export default class JitsiStreamBackgroundEffect {
         this._outputCanvasElement = document.createElement('canvas');
         // this._outputCanvasElement.getContext('2d');
         this._inputVideoElement = document.createElement('video');
-
-        
-
     }
 
     /**
@@ -90,6 +87,7 @@ export default class JitsiStreamBackgroundEffect {
 
         this._threeGeometry.rotation.x += 0.01;
         this._threeGeometry.rotation.y += 0.01;
+
         this._threeRenderer.render(this._threeScene, this._threeCamera);
 
         this._maskFrameTimerWorker.postMessage({
