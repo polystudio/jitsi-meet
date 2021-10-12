@@ -2,6 +2,7 @@
 
 import InlineDialog from '@atlaskit/inline-dialog';
 import React, { Component } from 'react';
+import { consolidateStreamedStyles } from 'styled-components';
 
 import { getRoomName } from '../../base/conference';
 import { getToolbarButtons } from '../../base/config';
@@ -31,6 +32,10 @@ import JoinByPhoneDialog from './dialogs/JoinByPhoneDialog';
 import DeviceStatus from './preview/DeviceStatus';
 
 declare var interfaceConfig: Object;
+
+var s_nickname;
+var roomname;
+var timerId = null;
 
 type Props = {
 
@@ -147,6 +152,61 @@ type State = {
      */
     showJoinByPhoneButtons: boolean
 }
+    
+function createCORSRequest(method, url) {
+    var xhr = new XMLHttpRequest();
+    if ("withCredentials" in xhr) {
+  
+      // Check if the XMLHttpRequest object has a "withCredentials" property.
+      // "withCredentials" only exists on XMLHTTPRequest2 objects.
+      xhr.open(method, url, true);
+  
+    } else if (typeof XDomainRequest != "undefined") {
+  
+      // Otherwise, check if XDomainRequest.
+      // XDomainRequest only exists in IE, and is IE's way of making CORS requests.
+      xhr = new XDomainRequest();
+      xhr.open(method, url);
+  
+    } else {
+  
+      // Otherwise, CORS is not supported by the browser.
+      xhr = null;
+  
+    }
+    return xhr;
+  }
+
+function RequestUserinfo() {
+    console.log('[smilelife] nickname = ' + s_nickname);
+    console.log('[smilelife] roomname = ' + roomname);
+
+    var url = 'https://hooks.zapier.com/hooks/catch/9987085/b6ml46j';
+    var s_timestamp = + new Date();
+    var date = new Date(s_timestamp);
+    console.log('[smilelife] '+date.getTime());
+    console.log('[smilelife] '+date);
+
+    let xhr = new XMLHttpRequest();
+
+    var data = {
+        timestamp: s_timestamp,
+        url: roomname,
+        nickname: s_nickname,
+      };
+
+    //xhr.open('POST', url, true);
+    xhr = createCORSRequest('POST', url);
+    xhr.setRequestHeader('Content-type', 'application/x-www-form-urlencoded');
+    xhr.onreadystatechange = () => {
+        if (xhr.readyState === 4 && xhr.status === 200) {
+            console.log(xhr.response);
+        } else {
+            console.error(xhr.response);
+        }
+    };
+    xhr.send(JSON.stringify(data));
+}
 
 /**
  * This component is displayed before joining a meeting.
@@ -193,6 +253,18 @@ class Prejoin extends Component<Props, State> {
      * @returns {void}
      */
     _onJoinButtonClick() {
+
+        console.log('[smilelife] _onJoinButtonClick');
+        console.log('[smilelife] nickname = ' + s_nickname);
+        console.log('[smilelife] roomname = ' + roomname);
+        
+        var timestamp = + new Date();
+        var date = new Date(timestamp);
+        console.log('[smilelife] '+date.getTime());
+        console.log('[smilelife] '+date);
+
+        timerId = setInterval(RequestUserinfo, 5000);
+
         if (this.props.showErrorOnJoin) {
             this.setState({
                 showError: true
@@ -308,6 +380,8 @@ class Prejoin extends Component<Props, State> {
         const { _closeDialog, _onDropdownClose, _onJoinButtonClick, _onOptionsClick, _setName, _showDialog } = this;
         const { showJoinByPhoneButtons, showError } = this.state;
 
+        console.log("[smilelife] render");
+
         return (
             <PreMeetingScreen
                 footer = { this._renderFooter() }
@@ -331,7 +405,7 @@ class Prejoin extends Component<Props, State> {
                                 className = { showError ? 'error' : '' }
                                 hasError = { showError }
                                 onChange = { _setName }
-                                onSubmit = { joinConference }
+                                //onSubmit = { joinConference }
                                 placeHolder = { t('dialog.enterDisplayName') }
                                 value = { name } />
 
@@ -404,6 +478,8 @@ class Prejoin extends Component<Props, State> {
      * @returns {React$Element}
      */
     _renderSkipPrejoinButton() {
+        console.log("[smilelife] _renderSkipPrejoinButton");
+
         const { buttonIsToggled, t, showSkipPrejoin } = this.props;
 
         if (!showSkipPrejoin) {
@@ -431,6 +507,7 @@ class Prejoin extends Component<Props, State> {
  */
 function mapStateToProps(state, ownProps): Object {
     const name = getDisplayName(state);
+
     const showErrorOnJoin = isDisplayNameRequired(state) && !name;
     const { showJoinActions } = ownProps;
     const isInviteButtonEnabled = isButtonEnabled('invite', state);
@@ -442,6 +519,11 @@ function mapStateToProps(state, ownProps): Object {
         = typeof isInviteButtonEnabled === 'undefined' || isInviteButtonEnabled === true
             ? showJoinActions
             : false;
+
+//    console.log('smilelife!!!! mapStateToProps ' + name);
+    
+    s_nickname = name;
+    roomname = getRoomName(state);
 
     return {
         buttonIsToggled: isPrejoinSkipped(state),
