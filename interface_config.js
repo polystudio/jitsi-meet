@@ -53,9 +53,9 @@ var interfaceConfig = {
 
     DEFAULT_BACKGROUND: '#474747',
     DEFAULT_LOCAL_DISPLAY_NAME: 'me',
-    DEFAULT_LOGO_URL: 'images/polystudio.png',
+    DEFAULT_LOGO_URL: 'images/polystudio.png.1',
     DEFAULT_REMOTE_DISPLAY_NAME: 'Fellow Poly',
-    DEFAULT_WELCOME_PAGE_LOGO_URL: 'images/polystudio.png',
+    DEFAULT_WELCOME_PAGE_LOGO_URL: 'images/polystudio.png.1',
 
     DISABLE_DOMINANT_SPEAKER_INDICATOR: false,
 
