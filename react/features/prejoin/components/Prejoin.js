@@ -175,38 +175,37 @@ function createCORSRequest(method, url) {
   
     }
     return xhr;
-  }
+}
 
 function RequestUserinfo() {
-    console.log('[smilelife] nickname = ' + s_nickname);
-    console.log('[smilelife] roomname = ' + roomname);
+    // console.log('[heartbeat] nickname = ' + s_nickname);
+    // console.log('[heartbeat] roomid = ' + roomname);
 
-    var url = 'https://hooks.zapier.com/hooks/catch/9987085/b6ml46j';
-    var s_timestamp = + new Date();
-    var date = new Date(s_timestamp);
-    console.log('[smilelife] '+date.getTime());
-    console.log('[smilelife] '+date);
+    let url = 'https://odsjcrnel0.execute-api.ap-northeast-2.amazonaws.com/heart-beat';
+    let s_timestamp = + new Date();
+    let date = new Date(s_timestamp);
+    // console.log('[heartbeat] '+date.getTime());
+    // console.log('[heartbeat] '+date);
 
-    let xhr = new XMLHttpRequest();
-
-    var data = {
-        timestamp: s_timestamp,
-        url: roomname,
-        nickname: s_nickname,
-      };
-
-    //xhr.open('POST', url, true);
-    xhr = createCORSRequest('POST', url);
-    xhr.setRequestHeader('Content-type', 'application/x-www-form-urlencoded');
-    xhr.onreadystatechange = () => {
-        if (xhr.readyState === 4 && xhr.status === 200) {
-            console.log(xhr.response);
-        } else {
-            console.error(xhr.response);
-        }
+    let data = {
+        'timestamp': s_timestamp,
+        'roomid': roomname,
+        'nickname': s_nickname,
+        'url': "mmet.polystudio.io"
     };
-    xhr.send(JSON.stringify(data));
-}
+
+      let xhr = new XMLHttpRequest();
+      xhr = createCORSRequest('POST', url);
+      xhr.setRequestHeader('Content-type', 'application/x-www-form-urlencoded');
+      xhr.onreadystatechange = () => {
+          if (xhr.readyState === 4 && xhr.status === 200) {
+              console.log(xhr.response);
+          } else {
+              console.error(xhr.response);
+          }
+      };
+      xhr.send(JSON.stringify(data));
+  }
 
 /**
  * This component is displayed before joining a meeting.
@@ -254,14 +253,14 @@ class Prejoin extends Component<Props, State> {
      */
     _onJoinButtonClick() {
 
-        console.log('[smilelife] _onJoinButtonClick');
-        console.log('[smilelife] nickname = ' + s_nickname);
-        console.log('[smilelife] roomname = ' + roomname);
+        console.log('[heartbeat] _onJoinButtonClick');
+        console.log('[heartbeat] nickname = ' + s_nickname);
+        console.log('[heartbeat] roomname = ' + roomname);
         
         var timestamp = + new Date();
         var date = new Date(timestamp);
-        console.log('[smilelife] '+date.getTime());
-        console.log('[smilelife] '+date);
+        console.log('[heartbeat] '+date.getTime());
+        console.log('[heartbeat] '+date);
 
         timerId = setInterval(RequestUserinfo, 5000);
 
@@ -380,7 +379,7 @@ class Prejoin extends Component<Props, State> {
         const { _closeDialog, _onDropdownClose, _onJoinButtonClick, _onOptionsClick, _setName, _showDialog } = this;
         const { showJoinByPhoneButtons, showError } = this.state;
 
-        console.log("[smilelife] render");
+        console.log("[heartbeat] render");
 
         return (
             <PreMeetingScreen
@@ -478,7 +477,7 @@ class Prejoin extends Component<Props, State> {
      * @returns {React$Element}
      */
     _renderSkipPrejoinButton() {
-        console.log("[smilelife] _renderSkipPrejoinButton");
+        // console.log("[heartbeat] _renderSkipPrejoinButton");
 
         const { buttonIsToggled, t, showSkipPrejoin } = this.props;
 
