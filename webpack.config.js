@@ -225,7 +225,7 @@ module.exports = [
             ...config.plugins,
             ...getBundleAnalyzerPlugin('alwaysontop')
         ],
-        performance: getPerformanceHints(400 * 1024)
+        performance: getPerformanceHints(800 * 1024)
     }),
     Object.assign({}, config, {
         entry: {

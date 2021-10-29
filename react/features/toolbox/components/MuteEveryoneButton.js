@@ -30,6 +30,7 @@ class MuteEveryoneButton extends AbstractButton<Props, *> {
     accessibilityLabel = 'toolbar.accessibilityLabel.muteEveryone';
     icon = IconMuteEveryone;
     label = 'toolbar.muteEveryone';
+    tooltip = 'toolbar.muteEveryone';
 
     /**
      * Handles clicking / pressing the button, and opens a confirmation dialog.
@@ -38,7 +39,13 @@ class MuteEveryoneButton extends AbstractButton<Props, *> {
      * @returns {void}
      */
     _handleClick() {
-        const { dispatch, localParticipantId } = this.props;
+        const { dispatch, localParticipantId, handleClick } = this.props;
+
+        if (handleClick) {
+            handleClick();
+
+            return;
+        }
 
         sendAnalytics(createToolbarEvent('mute.everyone.pressed'));
         dispatch(openDialog(MuteEveryoneDialog, {

@@ -93,6 +93,12 @@ export const IOS_RECORDING_ENABLED = 'ios.recording.enabled';
 export const IOS_SCREENSHARING_ENABLED = 'ios.screensharing.enabled';
 
 /**
+ * Flag indicating if screen sharing should be enabled in android.
+ * Default: enabled (true).
+ */
+export const ANDROID_SCREENSHARING_ENABLED = 'android.screensharing.enabled';
+
+/**
  * Flag indicating if kickout is enabled.
  * Default: enabled (true).
  */
@@ -149,10 +155,22 @@ export const PIP_ENABLED = 'pip.enabled';
 export const RAISE_HAND_ENABLED = 'raise-hand.enabled';
 
 /**
+ * Flag indicating if the reactions feature should be enabled.
+ * Default: enabled (true).
+ */
+export const REACTIONS_ENABLED = 'reactions.enabled';
+
+/**
  * Flag indicating if recording should be enabled.
  * Default: auto-detected.
  */
 export const RECORDING_ENABLED = 'recording.enabled';
+
+/**
+ * Flag indicating if the user should join the conference with the replaceParticipant functionality.
+ * Default: (false).
+ */
+export const REPLACE_PARTICIPANT = 'replace.participant';
 
 /**
  * Flag indicating the local and (maximum) remote video resolution. Overrides
