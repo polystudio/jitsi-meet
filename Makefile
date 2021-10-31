@@ -110,14 +110,3 @@ source-package:
 	cp css/all.css source_package/jitsi-meet/css && \
 	(cd source_package ; tar cjf ../jitsi-meet.tar.bz2 jitsi-meet) && \
 	rm -rf source_package
-
-docker-build:
-	docker build -t poly-jitsi .
-
-docker-run:
-	docker run --rm -it \
-	--publish 3000:8080 \
-	--publish 1022:22 \
-	--name poly-jitsi-test \
-	-v $(pwd):/home/poly/jitsi-poly \
-	poly-jitsi /bin/bash
