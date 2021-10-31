@@ -63,9 +63,8 @@ local function room_jid_match_rewrite(room_jid, stanza)
             roomless_iqs[stanza.attr.id] = stanza.attr.to;
         end
     end
-    room_jid = jid.join(new_node, new_host, new_resource);
-    -- module:log("debug", "Rewrote to %s", room_jid);
-    return room_jid
+
+    return jid.join(new_node, new_host, new_resource);
 end
 
 -- Utility function to check and convert a room JID from real [foo]room1@muc.example.com to virtual room1@muc.foo.example.com
@@ -90,10 +89,7 @@ local function internal_room_jid_match_rewrite(room_jid, stanza)
     end
 
     -- Ok, rewrite room_jid address to pretty format
-    local new_node, new_host, new_resource = target_node, muc_domain_prefix..".".. target_subdomain.."."..muc_domain_base, resource;
-    room_jid = jid.join(new_node, new_host, new_resource);
-    -- module:log("debug", "Rewrote to %s", room_jid);
-    return room_jid
+    return jid.join(target_node, muc_domain_prefix..".".. target_subdomain.."."..muc_domain_base, resource);
 end
 
 --- Finds and returns room by its jid
@@ -199,8 +195,6 @@ function update_presence_identity(
             return tag
         end
     )
-    module:log("debug",
-        "Presence after previous identity stripped: %s", tostring(stanza));
 
     stanza:tag("identity"):tag("user");
     for k, v in pairs(user) do
@@ -229,8 +223,6 @@ function update_presence_identity(
         stanza:up();
     end
 
-    module:log("debug",
-        "Presence with identity inserted %s", tostring(stanza))
 end
 
 -- Utility function to check whether feature is present and enabled. Allow
@@ -275,13 +267,19 @@ end
 --- retry @param retry number of times
 -- @param url endpoint to be called
 -- @param retry nr of retries, if retry is
+-- @param auth_token value to be passed as auth Bearer 
 -- nil there will be no retries
 -- @returns result of the http call or nil if
 -- the external call failed after the last retry
-function http_get_with_retry(url, retry)
+function http_get_with_retry(url, retry, auth_token)
     local content, code;
     local timeout_occurred;
     local wait, done = async.waiter();
+    local request_headers = http_headers or {}
+    if auth_token ~= nil then
+        request_headers['Authorization'] = 'Bearer ' .. auth_token
+    end
+
     local function cb(content_, code_, response_, request_)
         if timeout_occurred == nil then
             code = code_;
@@ -289,7 +287,7 @@ function http_get_with_retry(url, retry)
                 module:log("debug", "External call was successful, content %s", content_);
                 content = content_
             else
-                module:log("warn", "Error on public key request: Code %s, Content %s",
+                module:log("warn", "Error on GET request: Code %s, Content %s",
                     code_, content_);
             end
             done();
@@ -300,7 +298,7 @@ function http_get_with_retry(url, retry)
 
     local function call_http()
         return http.request(url, {
-            headers = http_headers or {},
+            headers = request_headers,
             method = "GET"
         }, cb);
     end
@@ -334,7 +332,7 @@ function http_get_with_retry(url, retry)
     timer.add_task(http_timeout, cancel);
     wait();
 
-    return content;
+    return content, code;
 end
 
 -- Checks whether there is status in the <x node

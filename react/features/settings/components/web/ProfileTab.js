@@ -43,6 +43,11 @@ export type Props = {
     email: string,
 
     /**
+     * If the display name is read only.
+     */
+    readOnlyName: boolean,
+
+    /**
      * Invoked to obtain translated strings.
      */
     t: Function
@@ -70,6 +75,34 @@ class ProfileTab extends AbstractDialogTab<Props> {
 
         // Bind event handlers so they are only bound once for every instance.
         this._onAuthToggle = this._onAuthToggle.bind(this);
+        this._onDisplayNameChange = this._onDisplayNameChange.bind(this);
+        this._onEmailChange = this._onEmailChange.bind(this);
+    }
+
+    _onDisplayNameChange: (Object) => void;
+
+    /**
+     * Changes display name of the user.
+     *
+     * @param {Object} e - The key event to handle.
+     *
+     * @returns {void}
+     */
+    _onDisplayNameChange({ target: { value } }) {
+        super._onChange({ displayName: value });
+    }
+
+    _onEmailChange: (Object) => void;
+
+    /**
+     * Changes email of the user.
+     *
+     * @param {Object} e - The key event to handle.
+     *
+     * @returns {void}
+     */
+    _onEmailChange({ target: { value } }) {
+        super._onChange({ email: value });
     }
 
     /**
@@ -83,6 +116,7 @@ class ProfileTab extends AbstractDialogTab<Props> {
             authEnabled,
             displayName,
             email,
+            readOnlyName,
             t
         } = this.props;
 
@@ -91,15 +125,12 @@ class ProfileTab extends AbstractDialogTab<Props> {
                 <div className = 'profile-edit'>
                     <div className = 'profile-edit-field'>
                         <FieldTextStateless
-                            autoFocus = { true }
+                            autoComplete = 'name'
                             compact = { true }
                             id = 'setDisplayName'
+                            isReadOnly = { readOnlyName }
                             label = { t('profile.setDisplayNameLabel') }
-                            // eslint-disable-next-line react/jsx-no-bind
-                            onChange = {
-                                ({ target: { value } }) =>
-                                    super._onChange({ displayName: value })
-                            }
+                            onChange = { this._onDisplayNameChange }
                             placeholder = { t('settings.name') }
                             shouldFitContainer = { true }
                             type = 'text'
@@ -110,11 +141,7 @@ class ProfileTab extends AbstractDialogTab<Props> {
                             compact = { true }
                             id = 'setEmail'
                             label = { t('profile.setEmailLabel') }
-                            // eslint-disable-next-line react/jsx-no-bind
-                            onChange = {
-                                ({ target: { value } }) =>
-                                    super._onChange({ email: value })
-                            }
+                            onChange = { this._onEmailChange }
                             placeholder = { t('profile.setEmailInput') }
                             shouldFitContainer = { true }
                             type = 'text'
@@ -163,9 +190,9 @@ class ProfileTab extends AbstractDialogTab<Props> {
 
         return (
             <div>
-                <div className = 'mock-atlaskit-label'>
+                <h2 className = 'mock-atlaskit-label'>
                     { t('toolbar.authenticate') }
-                </div>
+                </h2>
                 { authLogin
                     && <div className = 'auth-name'>
                         { t('settings.loggedIn', { name: authLogin }) }

@@ -3,7 +3,7 @@ CLEANCSS = ./node_modules/.bin/cleancss
 DEPLOY_DIR = libs
 LIBJITSIMEET_DIR = node_modules/lib-jitsi-meet/
 LIBFLAC_DIR = node_modules/libflacjs/dist/min/
-OLM_DIR = node_modules/olm
+OLM_DIR = node_modules/@matrix-org/olm
 RNNOISE_WASM_DIR = node_modules/rnnoise-wasm/dist/
 TFLITE_WASM = react/features/stream-effects/virtual-background/vendor/tflite
 MEET_MODELS_DIR  = react/features/stream-effects/virtual-background/vendor/models/
@@ -14,13 +14,17 @@ STYLES_BUNDLE = css/all.bundle.css
 STYLES_DESTINATION = css/all.css
 STYLES_MAIN = css/main.scss
 WEBPACK = ./node_modules/.bin/webpack
+<<<<<<< HEAD
 #WEBPACK_DEV_SERVER = node --max-old-space-size=8192 node_modules/webpack-dev-server/bin/webpack-dev-server.js
 WEBPACK_DEV_SERVER = ./node_modules/.bin/webpack-dev-server
+=======
+WEBPACK_DEV_SERVER = ./node_modules/.bin/webpack serve --mode development
+>>>>>>> develop-steph-latest
 
 all: compile deploy clean
 
 compile: compile-load-test
-	$(WEBPACK) -p
+	$(WEBPACK)
 
 compile-load-test:
 	${NPM} install --prefix resources/load-test && ${NPM} run build --prefix resources/load-test
@@ -52,9 +56,11 @@ deploy-appbundle:
 		$(OUTPUT_DIR)/analytics-ga.js \
 		$(BUILD_DIR)/analytics-ga.min.js \
 		$(BUILD_DIR)/analytics-ga.min.map \
+		$(DEPLOY_DIR)
+	cp \
 		$(BUILD_DIR)/close3.min.js \
 		$(BUILD_DIR)/close3.min.map \
-		$(DEPLOY_DIR)
+		$(DEPLOY_DIR) || true
 
 deploy-lib-jitsi-meet:
 	cp \
@@ -101,9 +107,13 @@ deploy-local:
 
 .NOTPARALLEL:
 dev: deploy-init deploy-css deploy-rnnoise-binary deploy-tflite deploy-meet-models deploy-lib-jitsi-meet deploy-libflac deploy-olm
+<<<<<<< HEAD
 	$(WEBPACK_DEV_SERVER) --detect-circular-deps --host 0.0.0.0 --port 8080
 # node --max-old-space-size=8192 node_modules/webpack-dev-server/bin/webpack-dev-server.js --detect-circular-deps --host 0.0.0.0 --port 8080
 # $(WEBPACK_DEV_SERVER) --detect-circular-deps --host 0.0.0.0 --port 8080
+=======
+	$(WEBPACK_DEV_SERVER)
+>>>>>>> develop-steph-latest
 
 source-package:
 	mkdir -p source_package/jitsi-meet/css && \

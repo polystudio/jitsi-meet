@@ -46,6 +46,7 @@ $menuBG:#242528;
 $newToolbarFontSize: 24px;
 $newToolbarHangupFontSize: 32px;
 $newToolbarSize: 48px;
+$newToolbarSizeMobile: 60px;
 $newToolbarSizeWithPadding: calc(#{$newToolbarSize} + 24px);
 $toolbarTitleFontSize: 19px;
 $overflowMenuItemColor: #fff;
@@ -115,7 +116,6 @@ $zindex2: 2;
 $zindex3: 3;
 $toolbarBackgroundZ: 4;
 $labelsZ: 5;
-$filmstripVideosZ: 6;
 $subtitlesZ: 7;
 $popoverZ: 8;
 $zindex10: 10;
@@ -130,6 +130,9 @@ $dropdownMaskZ: 900;
 $dropdownZ: 901;
 $centeredVideoLabelZ: 1010;
 $overlayZ: 1016;
+// Place filmstrip videos over toolbar in order
+// to make connection info visible.
+$filmstripVideosZ: $toolbarZ + 1;
 
 
 /**
@@ -261,3 +264,9 @@ $chromeExtensionBannerRightInMeeeting: 10px;
 */
 $smallScreen: 700px;
 $verySmallScreen: 500px;
+
+/**
+* Prejoin / premeeting screen
+*/
+
+$prejoinDefaultContentWidth: 336px;

@@ -18,8 +18,7 @@ const OS = Platform.OS;
  * Renders the app when the DOM tree has been loaded.
  */
 document.addEventListener('DOMContentLoaded', () => {
-    const now = window.performance.now();
-
+    const now = window.performance.now();  
     APP.connectionTimes['document.ready'] = now;
     logger.log('(TIME) document ready:\t', now);
 });

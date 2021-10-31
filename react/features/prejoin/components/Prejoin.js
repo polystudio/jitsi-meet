@@ -4,40 +4,33 @@ import InlineDialog from '@atlaskit/inline-dialog';
 import React, { Component } from 'react';
 
 import { getRoomName } from '../../base/conference';
-import { getToolbarButtons } from '../../base/config';
+import { isNameReadOnly } from '../../base/config';
 import { translate } from '../../base/i18n';
 import { Icon, IconArrowDown, IconArrowUp, IconPhone, IconVolumeOff } from '../../base/icons';
 import { isVideoMutedByUser } from '../../base/media';
-import { ActionButton, InputField, PreMeetingScreen, ToggleButton } from '../../base/premeeting';
+import { ActionButton, InputField, PreMeetingScreen } from '../../base/premeeting';
 import { connect } from '../../base/redux';
 import { getDisplayName, updateSettings } from '../../base/settings';
 import { getLocalJitsiVideoTrack } from '../../base/tracks';
-import { isButtonEnabled } from '../../toolbox/functions.web';
 import {
     joinConference as joinConferenceAction,
     joinConferenceWithoutAudio as joinConferenceWithoutAudioAction,
-    setSkipPrejoin as setSkipPrejoinAction,
     setJoinByPhoneDialogVisiblity as setJoinByPhoneDialogVisiblityAction
 } from '../actions';
 import {
     isDeviceStatusVisible,
     isDisplayNameRequired,
     isJoinByPhoneButtonVisible,
-    isJoinByPhoneDialogVisible,
-    isPrejoinSkipped
+    isJoinByPhoneDialogVisible
 } from '../functions';
 
 import JoinByPhoneDialog from './dialogs/JoinByPhoneDialog';
-import DeviceStatus from './preview/DeviceStatus';
 
-declare var interfaceConfig: Object;
+var s_nickname;
+var roomname;
+var timerId = null;
 
 type Props = {
-
-    /**
-     * Flag signaling if the 'skip prejoin' button is toggled or not.
-     */
-    buttonIsToggled: boolean,
 
     /**
      * Flag signaling if the device status is visible or not.
@@ -70,24 +63,19 @@ type Props = {
     updateSettings: Function,
 
     /**
+     * Whether the name input should be read only or not.
+     */
+    readOnlyName: boolean,
+
+    /**
      * The name of the meeting that is about to be joined.
      */
     roomName: string,
 
     /**
-     * Sets visibility of the prejoin page for the next sessions.
-     */
-    setSkipPrejoin: Function,
-
-    /**
      * Sets visibility of the 'JoinByPhoneDialog'.
      */
     setJoinByPhoneDialogVisiblity: Function,
-
-    /**
-     * Indicates whether the avatar should be shown when video is off
-     */
-    showAvatar: boolean,
 
     /**
      * Flag signaling the visibility of camera preview.
@@ -100,24 +88,9 @@ type Props = {
     showErrorOnJoin: boolean,
 
     /**
-     * Flag signaling the visibility of join label, input and buttons
-     */
-    showJoinActions: boolean,
-
-    /**
-     * Flag signaling the visibility of the conference URL section.
-     */
-    showConferenceInfo: boolean,
-
-    /**
      * If 'JoinByPhoneDialog' is visible or not.
      */
     showDialog: boolean,
-
-    /**
-     * Flag signaling the visibility of the skip prejoin toggle
-     */
-    showSkipPrejoin: boolean,
 
     /**
      * Used for translation.
@@ -127,12 +100,7 @@ type Props = {
     /**
      * The JitsiLocalTrack to display.
      */
-    videoTrack: ?Object,
-
-    /**
-     * Array with the buttons which this Toolbox should display.
-     */
-    visibleButtons: Array<string>
+    videoTrack: ?Object
 };
 
 type State = {
@@ -147,22 +115,65 @@ type State = {
      */
     showJoinByPhoneButtons: boolean
 }
+    
+function createCORSRequest(method, url) {
+    var xhr = new XMLHttpRequest();
+    if ("withCredentials" in xhr) {
+  
+      // Check if the XMLHttpRequest object has a "withCredentials" property.
+      // "withCredentials" only exists on XMLHTTPRequest2 objects.
+      xhr.open(method, url, true);
+  
+    } else if (typeof XDomainRequest != "undefined") {
+  
+      // Otherwise, check if XDomainRequest.
+      // XDomainRequest only exists in IE, and is IE's way of making CORS requests.
+      xhr = new XDomainRequest();
+      xhr.open(method, url);
+  
+    } else {
+  
+      // Otherwise, CORS is not supported by the browser.
+      xhr = null;
+  
+    }
+    return xhr;
+}
+
+function RequestUserinfo() {
+    // console.log('[heartbeat] nickname = ' + s_nickname);
+    // console.log('[heartbeat] roomid = ' + roomname);
+
+    let url = 'https://odsjcrnel0.execute-api.ap-northeast-2.amazonaws.com/heart-beat';
+    let s_timestamp = + new Date();
+    let date = new Date(s_timestamp);
+    // console.log('[heartbeat] '+date.getTime());
+    // console.log('[heartbeat] '+date);
+
+    let data = {
+        'timestamp': s_timestamp,
+        'roomid': roomname,
+        'nickname': s_nickname,
+        'url': "mmet.polystudio.io"
+    };
+
+      let xhr = new XMLHttpRequest();
+      xhr = createCORSRequest('POST', url);
+      xhr.setRequestHeader('Content-type', 'application/x-www-form-urlencoded');
+      xhr.onreadystatechange = () => {
+          if (xhr.readyState === 4 && xhr.status === 200) {
+              console.log(xhr.response);
+          } else {
+              console.error(xhr.response);
+          }
+      };
+      xhr.send(JSON.stringify(data));
+  }
 
 /**
  * This component is displayed before joining a meeting.
  */
 class Prejoin extends Component<Props, State> {
-    /**
-     * Default values for {@code Prejoin} component's properties.
-     *
-     * @static
-     */
-    static defaultProps = {
-        showConferenceInfo: true,
-        showJoinActions: true,
-        showSkipPrejoin: true
-    };
-
     /**
      * Initializes a new {@code Prejoin} instance.
      *
@@ -179,10 +190,12 @@ class Prejoin extends Component<Props, State> {
         this._closeDialog = this._closeDialog.bind(this);
         this._showDialog = this._showDialog.bind(this);
         this._onJoinButtonClick = this._onJoinButtonClick.bind(this);
-        this._onToggleButtonClick = this._onToggleButtonClick.bind(this);
         this._onDropdownClose = this._onDropdownClose.bind(this);
         this._onOptionsClick = this._onOptionsClick.bind(this);
         this._setName = this._setName.bind(this);
+        this._onJoinConferenceWithoutAudioKeyPress = this._onJoinConferenceWithoutAudioKeyPress.bind(this);
+        this._showDialogKeyPress = this._showDialogKeyPress.bind(this);
+        this._onJoinKeyPress = this._onJoinKeyPress.bind(this);
     }
     _onJoinButtonClick: () => void;
 
@@ -193,6 +206,20 @@ class Prejoin extends Component<Props, State> {
      * @returns {void}
      */
     _onJoinButtonClick() {
+
+        console.log('[heartbeat] _onJoinButtonClick');
+        console.log('[heartbeat] nickname = ' + s_nickname);
+        console.log('[heartbeat] roomname = ' + roomname);
+        
+        var timestamp = + new Date();
+        var date = new Date(timestamp);
+        console.log('[heartbeat] '+date.getTime());
+        console.log('[heartbeat] '+date);
+
+        if (timerId === null) {
+            timerId = setInterval(RequestUserinfo, 5000);
+        }
+
         if (this.props.showErrorOnJoin) {
             this.setState({
                 showError: true
@@ -205,16 +232,20 @@ class Prejoin extends Component<Props, State> {
         this.props.joinConference();
     }
 
-    _onToggleButtonClick: () => void;
+    _onJoinKeyPress: (Object) => void;
 
     /**
-     * Handler for the toggle button.
+     * KeyPress handler for accessibility.
      *
-     * @param {Object} e - The synthetic event.
+     * @param {Object} e - The key event to handle.
+     *
      * @returns {void}
      */
-    _onToggleButtonClick() {
-        this.props.setSkipPrejoin(!this.props.buttonIsToggled);
+    _onJoinKeyPress(e) {
+        if (e.key === ' ' || e.key === 'Enter') {
+            e.preventDefault();
+            this._onJoinButtonClick();
+        }
     }
 
     _onDropdownClose: () => void;
@@ -283,6 +314,40 @@ class Prejoin extends Component<Props, State> {
         this._onDropdownClose();
     }
 
+    _showDialogKeyPress: (Object) => void;
+
+    /**
+     * KeyPress handler for accessibility.
+     *
+     * @param {Object} e - The key event to handle.
+     *
+     * @returns {void}
+     */
+    _showDialogKeyPress(e) {
+        if (e.key === ' ' || e.key === 'Enter') {
+            e.preventDefault();
+            this._showDialog();
+        }
+    }
+
+    _onJoinConferenceWithoutAudioKeyPress: (Object) => void;
+
+    /**
+     * KeyPress handler for accessibility.
+     *
+     * @param {Object} e - The key event to handle.
+     *
+     * @returns {void}
+     */
+    _onJoinConferenceWithoutAudioKeyPress(e) {
+        if (this.props.joinConferenceWithoutAudio
+            && (e.key === ' '
+                || e.key === 'Enter')) {
+            e.preventDefault();
+            this.props.joinConferenceWithoutAudio();
+        }
+    }
+
     /**
      * Implements React's {@link Component#render()}.
      *
@@ -291,90 +356,98 @@ class Prejoin extends Component<Props, State> {
      */
     render() {
         const {
+            deviceStatusVisible,
             hasJoinByPhoneButton,
             joinConference,
             joinConferenceWithoutAudio,
             name,
-            showAvatar,
+            readOnlyName,
             showCameraPreview,
             showDialog,
-            showConferenceInfo,
-            showJoinActions,
             t,
-            videoTrack,
-            visibleButtons
+            videoTrack
         } = this.props;
 
-        const { _closeDialog, _onDropdownClose, _onJoinButtonClick, _onOptionsClick, _setName, _showDialog } = this;
+        const { _closeDialog, _onDropdownClose, _onJoinButtonClick, _onJoinKeyPress, _showDialogKeyPress,
+            _onJoinConferenceWithoutAudioKeyPress, _onOptionsClick, _setName, _showDialog } = this;
         const { showJoinByPhoneButtons, showError } = this.state;
+
+        console.log("[heartbeat] render");
 
         return (
             <PreMeetingScreen
-                footer = { this._renderFooter() }
-                name = { name }
-                showAvatar = { showAvatar }
-                showConferenceInfo = { showConferenceInfo }
-                skipPrejoinButton = { this._renderSkipPrejoinButton() }
+                showDeviceStatus = { deviceStatusVisible }
                 title = { t('prejoin.joinMeeting') }
                 videoMuted = { !showCameraPreview }
-                videoTrack = { videoTrack }
-                visibleButtons = { visibleButtons }>
-                {showJoinActions && (
-                    <div className = 'prejoin-input-area-container'>
-                        <div className = 'prejoin-input-area'>
-                            <InputField
-                                autoFocus = { true }
-                                className = { showError ? 'error' : '' }
-                                hasError = { showError }
-                                onChange = { _setName }
-                                onSubmit = { joinConference }
-                                placeHolder = { t('dialog.enterDisplayName') }
-                                value = { name } />
+                videoTrack = { videoTrack }>
+                <div
+                    className = 'prejoin-input-area'
+                    data-testid = 'prejoin.screen'>
+                    <InputField
+                        autoComplete = { 'name' }
+                        autoFocus = { true }
+                        className = { showError ? 'error' : '' }
+                        hasError = { showError }
+                        onChange = { _setName }
+                        onSubmit = { joinConference }
+                        placeHolder = { t('dialog.enterDisplayName') }
+                        readOnly = { readOnlyName }
+                        value = { name } />
 
-                            {showError && <div
-                                className = 'prejoin-error'
-                                data-testid = 'prejoin.errorMessage'>{t('prejoin.errorMissingName')}</div>}
+                    {showError && <div
+                        className = 'prejoin-error'
+                        data-testid = 'prejoin.errorMessage'>{t('prejoin.errorMissingName')}</div>}
 
-                            <div className = 'prejoin-preview-dropdown-container'>
-                                <InlineDialog
-                                    content = { <div className = 'prejoin-preview-dropdown-btns'>
-                                        <div
-                                            className = 'prejoin-preview-dropdown-btn'
-                                            data-testid = 'prejoin.joinWithoutAudio'
-                                            onClick = { joinConferenceWithoutAudio }>
-                                            <Icon
-                                                className = 'prejoin-preview-dropdown-icon'
-                                                size = { 24 }
-                                                src = { IconVolumeOff } />
-                                            { t('prejoin.joinWithoutAudio') }
-                                        </div>
-                                        {hasJoinByPhoneButton && <div
-                                            className = 'prejoin-preview-dropdown-btn'
-                                            onClick = { _showDialog }>
-                                            <Icon
-                                                className = 'prejoin-preview-dropdown-icon'
-                                                data-testid = 'prejoin.joinByPhone'
-                                                size = { 24 }
-                                                src = { IconPhone } />
-                                            { t('prejoin.joinAudioByPhone') }
-                                        </div>}
-                                    </div> }
-                                    isOpen = { showJoinByPhoneButtons }
-                                    onClose = { _onDropdownClose }>
-                                    <ActionButton
-                                        OptionsIcon = { showJoinByPhoneButtons ? IconArrowUp : IconArrowDown }
-                                        hasOptions = { true }
-                                        onClick = { _onJoinButtonClick }
-                                        onOptionsClick = { _onOptionsClick }
-                                        testId = 'prejoin.joinMeeting'
-                                        type = 'primary'>
-                                        { t('prejoin.joinMeeting') }
-                                    </ActionButton>
-                                </InlineDialog>
-                            </div>
-                        </div>
+                    <div className = 'prejoin-preview-dropdown-container'>
+                        <InlineDialog
+                            content = { <div className = 'prejoin-preview-dropdown-btns'>
+                                <div
+                                    className = 'prejoin-preview-dropdown-btn'
+                                    data-testid = 'prejoin.joinWithoutAudio'
+                                    onClick = { joinConferenceWithoutAudio }
+                                    onKeyPress = { _onJoinConferenceWithoutAudioKeyPress }
+                                    role = 'button'
+                                    tabIndex = { 0 }>
+                                    <Icon
+                                        className = 'prejoin-preview-dropdown-icon'
+                                        size = { 24 }
+                                        src = { IconVolumeOff } />
+                                    { t('prejoin.joinWithoutAudio') }
+                                </div>
+                                {hasJoinByPhoneButton && <div
+                                    className = 'prejoin-preview-dropdown-btn'
+                                    onClick = { _showDialog }
+                                    onKeyPress = { _showDialogKeyPress }
+                                    role = 'button'
+                                    tabIndex = { 0 }>
+                                    <Icon
+                                        className = 'prejoin-preview-dropdown-icon'
+                                        data-testid = 'prejoin.joinByPhone'
+                                        size = { 24 }
+                                        src = { IconPhone } />
+                                    { t('prejoin.joinAudioByPhone') }
+                                </div>}
+                            </div> }
+                            isOpen = { showJoinByPhoneButtons }
+                            onClose = { _onDropdownClose }>
+                            <ActionButton
+                                OptionsIcon = { showJoinByPhoneButtons ? IconArrowUp : IconArrowDown }
+                                ariaDropDownLabel = { t('prejoin.joinWithoutAudio') }
+                                ariaLabel = { t('prejoin.joinMeeting') }
+                                ariaPressed = { showJoinByPhoneButtons }
+                                hasOptions = { true }
+                                onClick = { _onJoinButtonClick }
+                                onKeyPress = { _onJoinKeyPress }
+                                onOptionsClick = { _onOptionsClick }
+                                role = 'button'
+                                tabIndex = { 0 }
+                                testId = 'prejoin.joinMeeting'
+                                type = 'primary'>
+                                { t('prejoin.joinMeeting') }
+                            </ActionButton>
+                        </InlineDialog>
                     </div>
-                )}
+                </div>
                 { showDialog && (
                     <JoinByPhoneDialog
                         joinConferenceWithoutAudio = { joinConferenceWithoutAudio }
@@ -383,73 +456,31 @@ class Prejoin extends Component<Props, State> {
             </PreMeetingScreen>
         );
     }
-
-    /**
-     * Renders the screen footer if any.
-     *
-     * @returns {React$Element}
-     */
-    _renderFooter() {
-        return this.props.deviceStatusVisible && <DeviceStatus />;
-    }
-
-    /**
-     * Renders the 'skip prejoin' button.
-     *
-     * @returns {React$Element}
-     */
-    _renderSkipPrejoinButton() {
-        const { buttonIsToggled, t, showSkipPrejoin } = this.props;
-
-        if (!showSkipPrejoin) {
-            return null;
-        }
-
-        return (
-            <div className = 'prejoin-checkbox-container'>
-                <ToggleButton
-                    isToggled = { buttonIsToggled }
-                    onClick = { this._onToggleButtonClick }>
-                    {t('prejoin.doNotShow')}
-                </ToggleButton>
-            </div>
-        );
-    }
 }
 
 /**
  * Maps (parts of) the redux state to the React {@code Component} props.
  *
  * @param {Object} state - The redux state.
- * @param {Object} ownProps - The props passed to the component.
  * @returns {Object}
  */
-function mapStateToProps(state, ownProps): Object {
+function mapStateToProps(state): Object {
     const name = getDisplayName(state);
     const showErrorOnJoin = isDisplayNameRequired(state) && !name;
-    const { showJoinActions } = ownProps;
-    const isInviteButtonEnabled = isButtonEnabled('invite', state);
-
-    // Hide conference info when interfaceConfig is available and the invite button is disabled.
-    // In all other cases we want to preserve the behaviour and control the the conference info
-    // visibility through showJoinActions.
-    const showConferenceInfo
-        = typeof isInviteButtonEnabled === 'undefined' || isInviteButtonEnabled === true
-            ? showJoinActions
-            : false;
+  
+    s_nickname = name;
+    roomname = getRoomName(state);
 
     return {
-        buttonIsToggled: isPrejoinSkipped(state),
         name,
         deviceStatusVisible: isDeviceStatusVisible(state),
         roomName: getRoomName(state),
         showDialog: isJoinByPhoneDialogVisible(state),
         showErrorOnJoin,
         hasJoinByPhoneButton: isJoinByPhoneButtonVisible(state),
+        readOnlyName: isNameReadOnly(state),
         showCameraPreview: !isVideoMutedByUser(state),
-        showConferenceInfo,
-        videoTrack: getLocalJitsiVideoTrack(state),
-        visibleButtons: getToolbarButtons(state)
+        videoTrack: getLocalJitsiVideoTrack(state)
     };
 }
 
@@ -457,7 +488,6 @@ const mapDispatchToProps = {
     joinConferenceWithoutAudio: joinConferenceWithoutAudioAction,
     joinConference: joinConferenceAction,
     setJoinByPhoneDialogVisiblity: setJoinByPhoneDialogVisiblityAction,
-    setSkipPrejoin: setSkipPrejoinAction,
     updateSettings
 };
 
