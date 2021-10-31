@@ -14,12 +14,7 @@ STYLES_BUNDLE = css/all.bundle.css
 STYLES_DESTINATION = css/all.css
 STYLES_MAIN = css/main.scss
 WEBPACK = ./node_modules/.bin/webpack
-<<<<<<< HEAD
-#WEBPACK_DEV_SERVER = node --max-old-space-size=8192 node_modules/webpack-dev-server/bin/webpack-dev-server.js
-WEBPACK_DEV_SERVER = ./node_modules/.bin/webpack-dev-server
-=======
 WEBPACK_DEV_SERVER = ./node_modules/.bin/webpack serve --mode development
->>>>>>> develop-steph-latest
 
 all: compile deploy clean
 
@@ -107,13 +102,7 @@ deploy-local:
 
 .NOTPARALLEL:
 dev: deploy-init deploy-css deploy-rnnoise-binary deploy-tflite deploy-meet-models deploy-lib-jitsi-meet deploy-libflac deploy-olm
-<<<<<<< HEAD
-	$(WEBPACK_DEV_SERVER) --detect-circular-deps --host 0.0.0.0 --port 8080
-# node --max-old-space-size=8192 node_modules/webpack-dev-server/bin/webpack-dev-server.js --detect-circular-deps --host 0.0.0.0 --port 8080
-# $(WEBPACK_DEV_SERVER) --detect-circular-deps --host 0.0.0.0 --port 8080
-=======
 	$(WEBPACK_DEV_SERVER)
->>>>>>> develop-steph-latest
 
 source-package:
 	mkdir -p source_package/jitsi-meet/css && \

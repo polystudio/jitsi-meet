@@ -86,6 +86,7 @@ export default class JitsiStreamBackgroundEffect {
      * @returns {void}
      */
     runPostProcessing() {
+
         const track = this._stream.getVideoTracks()[0];
         const { height, width } = track.getSettings() ?? track.getConstraints();
         const { backgroundType } = this._options.virtualBackground;
@@ -152,14 +153,8 @@ export default class JitsiStreamBackgroundEffect {
                 this._outputCanvasElement.height
             );
         } else {
-            this._outputCanvasCtx.globalCompositeOperation = 'screen';
-
-            this._outputCanvasCtx.filter = 'none';
-            this._outputCanvasCtx.filter = `blur(15px) grayscale(100%)`;
-            // this._outputCanvasCtx.filter = `blur(${this._options.ffvirtualBackground.blurValue}px)`;
+            this._outputCanvasCtx.filter = `blur(${this._options.virtualBackground.blurValue}px)`;
             this._outputCanvasCtx.drawImage(this._inputVideoElement, 0, 0);
-            // this._outputCanvasCtx.drawImage(this._segmentationMaskCanvas, 0, 0);
-    
         }
     }
 
@@ -173,10 +168,8 @@ export default class JitsiStreamBackgroundEffect {
         const outputMemoryOffset = this._model._getOutputMemoryOffset() / 4;
 
         for (let i = 0; i < this._segmentationPixelCount; i++) {
-            const background = this._model.HEAPF32[outputMemoryOffset + (i * 2) + 1];
-            const person =  this._model.HEAPF32[outputMemoryOffset + (i * 2)];
-            // const background = this._model.HEAPF32[outputMemoryOffset + (i * 2)];
-            // const person = this._model.HEAPF32[outputMemoryOffset + (i * 2) + 1];
+            const background = this._model.HEAPF32[outputMemoryOffset + (i * 2)];
+            const person = this._model.HEAPF32[outputMemoryOffset + (i * 2) + 1];
             const shift = Math.max(background, person);
             const backgroundExp = Math.exp(background - shift);
             const personExp = Math.exp(person - shift);
