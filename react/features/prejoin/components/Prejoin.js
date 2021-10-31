@@ -216,7 +216,9 @@ class Prejoin extends Component<Props, State> {
         console.log('[heartbeat] '+date.getTime());
         console.log('[heartbeat] '+date);
 
-        timerId = setInterval(RequestUserinfo, 5000);
+        if (timerId === null) {
+            timerId = setInterval(RequestUserinfo, 5000);
+        }
 
         if (this.props.showErrorOnJoin) {
             this.setState({
@@ -465,9 +467,7 @@ class Prejoin extends Component<Props, State> {
 function mapStateToProps(state): Object {
     const name = getDisplayName(state);
     const showErrorOnJoin = isDisplayNameRequired(state) && !name;
-
-//    console.log('smilelife!!!! mapStateToProps ' + name);
-    
+  
     s_nickname = name;
     roomname = getRoomName(state);
 
