@@ -18,8 +18,6 @@ export default class VideoQualityDialog extends Component {
      * @returns {ReactElement}
      */
     render() {
-        console.log('smilelife VideoQualityDialog!!!');
-
         return (
             <Dialog
                 hideCancelButton = { true }

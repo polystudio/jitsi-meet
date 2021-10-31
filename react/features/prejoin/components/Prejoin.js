@@ -2,7 +2,6 @@
 
 import InlineDialog from '@atlaskit/inline-dialog';
 import React, { Component } from 'react';
-import { consolidateStreamedStyles } from 'styled-components';
 
 import { getRoomName } from '../../base/conference';
 import { isNameReadOnly } from '../../base/config';
@@ -378,7 +377,6 @@ class Prejoin extends Component<Props, State> {
                 showDeviceStatus = { deviceStatusVisible }
                 title = { t('prejoin.joinMeeting') }
                 videoMuted = { !showCameraPreview }
-
                 videoTrack = { videoTrack }>
                 <div
                     className = 'prejoin-input-area'
@@ -466,7 +464,6 @@ class Prejoin extends Component<Props, State> {
  */
 function mapStateToProps(state): Object {
     const name = getDisplayName(state);
-
     const showErrorOnJoin = isDisplayNameRequired(state) && !name;
 
 //    console.log('smilelife!!!! mapStateToProps ' + name);

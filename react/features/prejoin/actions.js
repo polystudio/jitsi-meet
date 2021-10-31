@@ -21,8 +21,8 @@ import {
 import { openURLInBrowser } from '../base/util';
 import { executeDialOutRequest, executeDialOutStatusRequest, getDialInfoPageURL } from '../invite/functions';
 import { showErrorNotification } from '../notifications';
-import { setVirtualBackground, backgroundEnabled } from '../virtual-background/actions'
-import { checkBlurSupport } from '../virtual-background/functions'
+// import { setVirtualBackground, backgroundEnabled } from '../virtual-background/actions'
+// import { checkBlurSupport } from '../virtual-background/functions'
 
 import {
     PREJOIN_JOINING_IN_PROGRESS,
@@ -206,16 +206,17 @@ export function initPrejoin(tracks: Object[], errors: Object) {
     return async function(dispatch: Function) {
         dispatch(setPrejoinDeviceErrors(errors));
         dispatch(prejoinInitialized());
-        if ( checkBlurSupport() ) {
-            dispatch(backgroundEnabled(true));
-            dispatch(setVirtualBackground({
-                backgroundType: 'blur',
-                enabled: true,
-                blurValue: 25,
-                selectedThumbnail: 'none'
-            })
-            );
-        }
+        // if ( checkBlurSupport() ) {
+        //     dispatch(backgroundEnabled(true));
+        //     dispatch(
+        //         setVirtualBackground({
+        //             backgroundType: 'blur',
+        //             enabled: true,
+        //             blurValue: 25,
+        //             selectedThumbnail: 'none'
+        //         })
+        //     );
+        // }
         tracks.forEach(track => dispatch(trackAdded(track)));
     };
 }

@@ -55,6 +55,7 @@ export default class JitsiStreamBackgroundEffect {
             this._virtualVideo.srcObject = this._options?.virtualBackground?.virtualSource?.stream;
         }
         this._model = model;
+        this._options = options;
         this._segmentationPixelCount = this._options.width * this._options.height;
 
         // Bind event handler so it is only bound once for every instance.
@@ -106,7 +107,6 @@ export default class JitsiStreamBackgroundEffect {
             this._outputCanvasCtx.scale(-1, 1);
             this._outputCanvasCtx.translate(-this._outputCanvasElement.width, 0);
         }
-
         this._outputCanvasCtx.drawImage(
             this._segmentationMaskCanvas,
             0,
@@ -118,7 +118,6 @@ export default class JitsiStreamBackgroundEffect {
             this._inputVideoElement.width,
             this._inputVideoElement.height
         );
-
         if (backgroundType === VIRTUAL_BACKGROUND_TYPE.DESKTOP_SHARE) {
             this._outputCanvasCtx.restore();
         }
@@ -134,8 +133,7 @@ export default class JitsiStreamBackgroundEffect {
             this._outputCanvasCtx.scale(-1, 1);
             this._outputCanvasCtx.translate(-this._outputCanvasElement.width, 0);
         }
-        this._outputCanvasCtx.drawImage(this._inputVideoElement, 0, 0);
-
+        // this._outputCanvasCtx.drawImage(this._inputVideoElement, 0, 0);
         if (backgroundType === VIRTUAL_BACKGROUND_TYPE.DESKTOP_SHARE) {
             this._outputCanvasCtx.restore();
         }
