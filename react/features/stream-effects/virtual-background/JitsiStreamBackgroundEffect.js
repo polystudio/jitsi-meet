@@ -8,6 +8,8 @@ import {
     SET_TIMEOUT,
     timerWorkerScript
 } from './TimerWorker';
+import * as fShader from './shaders/frag'
+import * as vShader from './shaders/vertex'
 
 import * as THREE from 'three';
 import { Scene } from 'three';
@@ -101,8 +103,8 @@ export default class JitsiStreamBackgroundEffect {
         const { height, width } = track.getSettings() ?? track.getConstraints();
         const { backgroundType } = this._options.virtualBackground;
 
-        this._outputCanvasElement.height = height;
-        this._outputCanvasElement.width = width;
+        // this._outputCanvasElement.height = height;
+        // this._outputCanvasElement.width = width;
         this._outputCanvasCtx.globalCompositeOperation = 'copy';
 
         // Draw segmentation mask.
@@ -184,7 +186,6 @@ export default class JitsiStreamBackgroundEffect {
             const preview = document.querySelector('#preview');
             if(preview){
                 preview.insertBefore(this._outputCanvasElement, preview.firstChild);
-                this._outputCanvasElement.style.zIndex = 999;
             }else{
 
             }
@@ -196,8 +197,8 @@ export default class JitsiStreamBackgroundEffect {
             }
         }
         
-        this._threeGeometry.rotation.x += 0.01;
-        this._threeGeometry.rotation.y += 0.01;
+        // this._threeGeometry.rotation.x += 0.01;
+        // this._threeGeometry.rotation.y += 0.01;
         this._threeRenderer.render(this._threeScene, this._threeCamera);
         this._maskFrameTimerWorker.postMessage({
             id: SET_TIMEOUT,
@@ -265,8 +266,8 @@ o
         const { height, frameRate, width }
             = firstVideoTrack.getSettings ? firstVideoTrack.getSettings() : firstVideoTrack.getConstraints();
 
-        this._outputCanvasElement.width = window.innerWidth; // parseInt(width, 10);
-        this._outputCanvasElement.height = window.innerHeight; // parseInt(height, 10);
+        // this._outputCanvasElement.width = window.innerWidth; // parseInt(width, 10);
+        // this._outputCanvasElement.height = window.innerHeight; // parseInt(height, 10);
         // this._outputCanvasCtx = this._outputCanvasElement.getContext('2d');
         this._inputVideoElement.width = parseInt(width, 10);
         this._inputVideoElement.height = parseInt(height, 10);
@@ -281,31 +282,37 @@ o
 
         this._threeScene = new THREE.Scene();
         const ratio = this._inputVideoElement.width / this._inputVideoElement.height;
-        this._threeCamera = new THREE.PerspectiveCamera( 75, ratio, 0.1, 1000);
+        // this._threeCamera = new THREE.PerspectiveCamera( 75, ratio, 0.1, 1000);
+        this._threeCamera = new THREE.OrthographicCamera();
+        this._threeCamera.position.z = 1;
         this._threeRenderer = new THREE.WebGLRenderer( { canvas: this._outputCanvasElement } );
-        this._threeRenderer = new THREE.WebGLRenderer( );
+        // this._threeRenderer = new THREE.WebGLRenderer( );
         
         this._threeRenderer.setSize( ratio*window.innerHeight, window.innerHeight);
         this._threeRenderer.setClearColor( 0x0000ff, 0);
-         
-        const geometry = new THREE.BoxGeometry(3,3,3);
-        // const geometry = new THREE.PlaneGeometry(ratio * 5, 5 );
-        // const videoTexture = new THREE.VideoTexture(this._inputVideoElement);
-        // this._inputVideoElement.play();
-        const meterial = new THREE.MeshBasicMaterial( {color: 0x00ff00});
+        
+        // const geometry = new THREE.BoxGeometry(3,3,3);
+        const geometry = new THREE.PlaneGeometry(2,2);
+        const videoTexture = new THREE.VideoTexture(this._inputVideoElement);
+        console.log(fShader)
+        this._inputVideoElement.play();
+        // const meterial = new THREE.MeshBasicMaterial( {color: 0x00ff00});
         // const meterial = new THREE.MeshBasicMaterial({ map: videoTexture });
+        const meterial = new THREE.ShaderMaterial({
+            fragmentShader : fShader.glslCode,
+            vertexShader : vShader.glslCode
+        });
     
         this._threeGeometry = new THREE.Mesh( geometry, meterial);
 
         this._threeScene.background = new THREE.Color( 0x0000ff );
         this._threeScene.add(this._threeGeometry);
-        this._threeCamera.position.z = 5;
         
         //Hide existing Video element
         let largeVideo = document.getElementById("largeVideo");
-        largeVideo.style.visibility="hidden";
-        largeVideo.style.zIndex=-1;
-        largeVideo.style.color = "blue";
+        // largeVideo.style.visibility="hidden";
+        // largeVideo.style.zIndex=-1;
+        // largeVideo.style.color = "blue";
 
         //Return dummy stream for debugging
         // const dummy=document.createElement('canvas');

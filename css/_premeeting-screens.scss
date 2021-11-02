@@ -215,6 +215,13 @@
         position: absolute;
         width: 100%;
     }
+    
+    canvas {
+        height: 100%;
+        object-fit: cover;
+        position: absolute;
+        width: 100%;
+    }
 }
 
 @mixin flex-centered() {
