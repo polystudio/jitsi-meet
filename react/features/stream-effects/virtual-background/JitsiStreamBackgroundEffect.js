@@ -33,6 +33,7 @@ export default class JitsiStreamBackgroundEffect {
     isEnabled: Function;
     startEffect: Function;
     stopEffect: Function;
+    _hue: Number;
 
     /**
      * Represents a modified video MediaStream track.
@@ -43,7 +44,7 @@ export default class JitsiStreamBackgroundEffect {
      */
     constructor(model: Object, options: Object) {
         this._options = options;
-
+        this._hue =0
         if (this._options.virtualBackground.backgroundType === VIRTUAL_BACKGROUND_TYPE.IMAGE) {
             this._virtualImage = document.createElement('img');
             this._virtualImage.crossOrigin = 'anonymous';
@@ -86,7 +87,6 @@ export default class JitsiStreamBackgroundEffect {
      * @returns {void}
      */
     runPostProcessing() {
-
         const track = this._stream.getVideoTracks()[0];
         const { height, width } = track.getSettings() ?? track.getConstraints();
         const { backgroundType } = this._options.virtualBackground;
@@ -133,6 +133,10 @@ export default class JitsiStreamBackgroundEffect {
             this._outputCanvasCtx.scale(-1, 1);
             this._outputCanvasCtx.translate(-this._outputCanvasElement.width, 0);
         }
+        this._hue += 0.1;
+        this._hue %= 360;
+        this._outputCanvasCtx.fillStyle = `hsl(${this._hue} 98% 50%)`;
+        this._outputCanvasCtx.fillRect(0, 0, this._outputCanvasElement.width, this._outputCanvasElement.height);
         // this._outputCanvasCtx.drawImage(this._inputVideoElement, 0, 0);
         if (backgroundType === VIRTUAL_BACKGROUND_TYPE.DESKTOP_SHARE) {
             this._outputCanvasCtx.restore();
