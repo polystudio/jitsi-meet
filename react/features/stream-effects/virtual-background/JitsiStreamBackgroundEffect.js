@@ -9,6 +9,9 @@ import {
     timerWorkerScript
 } from './TimerWorker';
 
+import * as THREE from 'three';
+import { Scene } from 'three';
+
 /**
  * Represents a modified MediaStream that adds effects to video background.
  * <tt>JitsiStreamBackgroundEffect</tt> does the processing of the original
@@ -34,6 +37,10 @@ export default class JitsiStreamBackgroundEffect {
     startEffect: Function;
     stopEffect: Function;
     _hue: Number;
+    _threeScene: THREE.Scene;
+    _threeCamera: THREE.Camera;
+    _threeRenderer: THREE.WebGLRenderer;
+    _threeGeometry: THREE.Mesh;
 
     /**
      * Represents a modified video MediaStream track.
@@ -59,13 +66,15 @@ export default class JitsiStreamBackgroundEffect {
         this._options = options;
         this._segmentationPixelCount = this._options.width * this._options.height;
 
-        // Bind event handler so it is only bound once for every instance.
+        // Bind event handlefdr so it is only bound once for every instance.
         this._onMaskFrameTimer = this._onMaskFrameTimer.bind(this);
 
         // Workaround for FF issue https://bugzilla.mozilla.org/show_bug.cgi?id=1388974
         this._outputCanvasElement = document.createElement('canvas');
-        this._outputCanvasElement.getContext('2d');
+        
+        // this._outputCanvasElement.getContext('2d');
         this._inputVideoElement = document.createElement('video');
+        
     }
 
     /**
@@ -77,7 +86,8 @@ export default class JitsiStreamBackgroundEffect {
      */
     _onMaskFrameTimer(response: Object) {
         if (response.data.id === TIMEOUT_TICK) {
-            this._renderMask();
+            // this._renderMask();
+            this._renderCube();
         }
     }
 
@@ -167,39 +177,35 @@ export default class JitsiStreamBackgroundEffect {
      *
      * @returns {void}
      */
-    runInference() {
-        this._model._runInference();
-        const outputMemoryOffset = this._model._getOutputMemoryOffset() / 4;
+    _renderCube(){
+        //Append Canvas element under largeVideoWrapper div
+        parent = this._outputCanvasElement.parentElement;
+        if(parent == null){
+            const preview = document.querySelector('#preview');
+            if(preview){
+                preview.insertBefore(this._outputCanvasElement, preview.firstChild);
+                this._outputCanvasElement.style.zIndex = 999;
+            }else{
 
-        for (let i = 0; i < this._segmentationPixelCount; i++) {
-            const background = this._model.HEAPF32[outputMemoryOffset + (i * 2)];
-            const person = this._model.HEAPF32[outputMemoryOffset + (i * 2) + 1];
-            const shift = Math.max(background, person);
-            const backgroundExp = Math.exp(background - shift);
-            const personExp = Math.exp(person - shift);
-
-            // Sets only the alpha component of each pixel.
-            this._segmentationMask.data[(i * 4) + 3] = (255 * personExp) / (backgroundExp + personExp);
+            }
+        }else if( parent.id == "preview"){
+            const preview = document.querySelector('#preview');
+            if(preview ==null ){
+                const largeVideoWrapper = document.querySelector("#largeVideoWrapper");
+                largeVideoWrapper.insertBefore(this._outputCanvasElement, largeVideoWrapper.firstChild);
+            }
         }
-        this._segmentationMaskCtx.putImageData(this._segmentationMask, 0, 0);
-    }
-
-    /**
-     * Loop function to render the background mask.
-     *
-     * @private
-     * @returns {void}
-     */
-    _renderMask() {
-        this.resizeSource();
-        this.runInference();
-        this.runPostProcessing();
-
+        
+        this._threeGeometry.rotation.x += 0.01;
+        this._threeGeometry.rotation.y += 0.01;
+        this._threeRenderer.render(this._threeScene, this._threeCamera);
         this._maskFrameTimerWorker.postMessage({
             id: SET_TIMEOUT,
             timeMs: 1000 / 30
         });
+
     }
+
 
     /**
      * Represents the resize source process.
@@ -226,7 +232,7 @@ export default class JitsiStreamBackgroundEffect {
             this._options.height
         );
         const inputMemoryOffset = this._model._getInputMemoryOffset() / 4;
-
+o
         for (let i = 0; i < this._segmentationPixelCount; i++) {
             this._model.HEAPF32[inputMemoryOffset + (i * 3)] = imageData.data[i * 4] / 255;
             this._model.HEAPF32[inputMemoryOffset + (i * 3) + 1] = imageData.data[(i * 4) + 1] / 255;
@@ -259,15 +265,9 @@ export default class JitsiStreamBackgroundEffect {
         const { height, frameRate, width }
             = firstVideoTrack.getSettings ? firstVideoTrack.getSettings() : firstVideoTrack.getConstraints();
 
-        this._segmentationMask = new ImageData(this._options.width, this._options.height);
-        this._segmentationMaskCanvas = document.createElement('canvas');
-        this._segmentationMaskCanvas.width = this._options.width;
-        this._segmentationMaskCanvas.height = this._options.height;
-        this._segmentationMaskCtx = this._segmentationMaskCanvas.getContext('2d');
-
-        this._outputCanvasElement.width = parseInt(width, 10);
-        this._outputCanvasElement.height = parseInt(height, 10);
-        this._outputCanvasCtx = this._outputCanvasElement.getContext('2d');
+        this._outputCanvasElement.width = window.innerWidth; // parseInt(width, 10);
+        this._outputCanvasElement.height = window.innerHeight; // parseInt(height, 10);
+        // this._outputCanvasCtx = this._outputCanvasElement.getContext('2d');
         this._inputVideoElement.width = parseInt(width, 10);
         this._inputVideoElement.height = parseInt(height, 10);
         this._inputVideoElement.autoplay = true;
@@ -279,7 +279,39 @@ export default class JitsiStreamBackgroundEffect {
             });
         };
 
+        this._threeScene = new THREE.Scene();
+        const ratio = this._inputVideoElement.width / this._inputVideoElement.height;
+        this._threeCamera = new THREE.PerspectiveCamera( 75, ratio, 0.1, 1000);
+        this._threeRenderer = new THREE.WebGLRenderer( { canvas: this._outputCanvasElement } );
+        this._threeRenderer = new THREE.WebGLRenderer( );
+        
+        this._threeRenderer.setSize( ratio*window.innerHeight, window.innerHeight);
+        this._threeRenderer.setClearColor( 0x0000ff, 0);
+         
+        const geometry = new THREE.BoxGeometry(3,3,3);
+        // const geometry = new THREE.PlaneGeometry(ratio * 5, 5 );
+        // const videoTexture = new THREE.VideoTexture(this._inputVideoElement);
+        // this._inputVideoElement.play();
+        const meterial = new THREE.MeshBasicMaterial( {color: 0x00ff00});
+        // const meterial = new THREE.MeshBasicMaterial({ map: videoTexture });
+    
+        this._threeGeometry = new THREE.Mesh( geometry, meterial);
+
+        this._threeScene.background = new THREE.Color( 0x0000ff );
+        this._threeScene.add(this._threeGeometry);
+        this._threeCamera.position.z = 5;
+        
+        //Hide existing Video element
+        let largeVideo = document.getElementById("largeVideo");
+        largeVideo.style.visibility="hidden";
+        largeVideo.style.zIndex=-1;
+        largeVideo.style.color = "blue";
+
+        //Return dummy stream for debugging
+        // const dummy=document.createElement('canvas');
+        // this._renderCube();
         return this._outputCanvasElement.captureStream(parseInt(frameRate, 10));
+        // return dummy.captureStream(parseInt(frameRate, 10));
     }
 
     /**

@@ -36,6 +36,7 @@ export async function createVirtualBackgroundEffect(virtualBackground: Object, d
     if (!MediaStreamTrack.prototype.getSettings && !MediaStreamTrack.prototype.getConstraints) {
         throw new Error('JitsiStreamBackgroundEffect not supported!');
     }
+
     let tflite;
     let wasmCheck;
 
@@ -70,18 +71,18 @@ export async function createVirtualBackgroundEffect(virtualBackground: Object, d
 
     }
 
-    const modelBufferOffset = tflite._getModelBufferMemoryOffset();
-    const modelResponse = await fetch(wasmCheck.feature.simd ? models.model144 : models.model96);
+    // const modelBufferOffset = tflite._getModelBufferMemoryOffset();
+    // const modelResponse = await fetch(wasmCheck.feature.simd ? models.model144 : models.model96);
 
-    if (!modelResponse.ok) {
-        throw new Error('Failed to download tflite model!');
-    }
+    // if (!modelResponse.ok) {
+    //     throw new Error('Failed to download tflite model!');
+    // }
 
-    const model = await modelResponse.arrayBuffer();
+    // const model = await modelResponse.arrayBuffer();
 
-    tflite.HEAPU8.set(new Uint8Array(model), modelBufferOffset);
+    // tflite.HEAPU8.set(new Uint8Array(model), modelBufferOffset);
 
-    tflite._loadModel(model.byteLength);
+    // tflite._loadModel(model.byteLength);
 
     const options = {
         ...wasmCheck.feature.simd ? segmentationDimensions.model144 : segmentationDimensions.model96,
