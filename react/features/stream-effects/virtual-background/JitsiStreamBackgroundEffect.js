@@ -77,6 +77,7 @@ export default class JitsiStreamBackgroundEffect {
         // this._outputCanvasElement.getContext('2d');
         this._inputVideoElement = document.createElement('video');
         
+        
     }
 
     /**
@@ -110,7 +111,7 @@ export default class JitsiStreamBackgroundEffect {
         // Draw segmentation mask.
 
         // Smooth out the edges.
-        this._outputCanvasCtx.filter = backgroundType === VIRTUAL_BACKGROUND_TYPE.IMAGE ? 'blur(4px)' : 'blur(8px)';
+        // this._outputCanvasCtx.filter = backgroundType === VIRTUAL_BACKGROUND_TYPE.IMAGE ? 'blur(4px)' : 'blur(8px)';
         if (backgroundType === VIRTUAL_BACKGROUND_TYPE.DESKTOP_SHARE) {
             // Save current context before applying transformations.
             this._outputCanvasCtx.save();
@@ -134,7 +135,7 @@ export default class JitsiStreamBackgroundEffect {
             this._outputCanvasCtx.restore();
         }
         this._outputCanvasCtx.globalCompositeOperation = 'source-in';
-        this._outputCanvasCtx.filter = 'none';
+        // this._outputCanvasCtx.filter = 'none';
 
         // Draw the foreground video.
         if (backgroundType === VIRTUAL_BACKGROUND_TYPE.DESKTOP_SHARE) {
@@ -157,7 +158,7 @@ export default class JitsiStreamBackgroundEffect {
         // Draw the background.
 
         this._outputCanvasCtx.globalCompositeOperation = 'destination-over';
-        this._outputCanvasCtx.filter = null;
+        // this._outputCanvasCtx.filter = null;
         if (backgroundType === VIRTUAL_BACKGROUND_TYPE.IMAGE
             || backgroundType === VIRTUAL_BACKGROUND_TYPE.DESKTOP_SHARE) {
             this._outputCanvasCtx.drawImage(
@@ -181,21 +182,21 @@ export default class JitsiStreamBackgroundEffect {
      */
     _renderCube(){
         //Append Canvas element under largeVideoWrapper div
-        parent = this._outputCanvasElement.parentElement;
-        if(parent == null){
-            const preview = document.querySelector('#preview');
-            if(preview){
-                preview.insertBefore(this._outputCanvasElement, preview.firstChild);
-            }else{
+        // parent = this._outputCanvasElement.parentElement;
+        // if(parent == null){
+        //     const preview = document.querySelector('#preview');
+        //     if(preview){
+        //         preview.insertBefore(this._outputCanvasElement, preview.firstChild);
+        //     }else{
 
-            }
-        }else if( parent.id == "preview"){
-            const preview = document.querySelector('#preview');
-            if(preview ==null ){
-                const largeVideoWrapper = document.querySelector("#largeVideoWrapper");
-                largeVideoWrapper.insertBefore(this._outputCanvasElement, largeVideoWrapper.firstChild);
-            }
-        }
+        //     }
+        // }else if( parent.id == "preview"){
+        //     const preview = document.querySelector('#preview');
+        //     if(preview ==null ){
+        //         const largeVideoWrapper = document.querySelector("#largeVideoWrapper");
+        //         largeVideoWrapper.insertBefore(this._outputCanvasElement, largeVideoWrapper.firstChild);
+        //     }
+        // }
         
         // this._threeGeometry.rotation.x += 0.01;
         // this._threeGeometry.rotation.y += 0.01;
@@ -266,11 +267,11 @@ o
         const { height, frameRate, width }
             = firstVideoTrack.getSettings ? firstVideoTrack.getSettings() : firstVideoTrack.getConstraints();
 
-        // this._outputCanvasElement.width = window.innerWidth; // parseInt(width, 10);
-        // this._outputCanvasElement.height = window.innerHeight; // parseInt(height, 10);
-        // this._outputCanvasCtx = this._outputCanvasElement.getContext('2d');
         this._inputVideoElement.width = parseInt(width, 10);
         this._inputVideoElement.height = parseInt(height, 10);
+        this._inputVideoElement.hidden = true;
+        // this._inputVideoElement.muted = true;
+        this._inputVideoElement.playsInline = true;
         this._inputVideoElement.autoplay = true;
         this._inputVideoElement.srcObject = this._stream;
         this._inputVideoElement.onloadeddata = () => {
@@ -286,21 +287,28 @@ o
         this._threeCamera = new THREE.OrthographicCamera();
         this._threeCamera.position.z = 1;
         this._threeRenderer = new THREE.WebGLRenderer( { canvas: this._outputCanvasElement } );
-        // this._threeRenderer = new THREE.WebGLRenderer( );
+        // console.log("SHADING_LANG_VER::" +this._threeRenderer.getContext().SHADING_LANGUAGE_VERSION)
         
         this._threeRenderer.setSize( ratio*window.innerHeight, window.innerHeight);
         this._threeRenderer.setClearColor( 0x0000ff, 0);
         
         // const geometry = new THREE.BoxGeometry(3,3,3);
-        const geometry = new THREE.PlaneGeometry(2,2);
+        const geometry = new THREE.PlaneGeometry(1.0,1.0);
         const videoTexture = new THREE.VideoTexture(this._inputVideoElement);
         console.log(fShader)
         this._inputVideoElement.play();
         // const meterial = new THREE.MeshBasicMaterial( {color: 0x00ff00});
         // const meterial = new THREE.MeshBasicMaterial({ map: videoTexture });
+        const uniforms = {
+            u_texture   : {type: "t", value: videoTexture},
+            u_resolution: {type: "v2", value: new THREE.Vector2(this._outputCanvasElement.width, this._outputCanvasElement.height)},
+            u_texsize   : {type: "v2", value: new THREE.Vector2(this._inputVideoElement.width, this._inputVideoElement.height)}
+        }
         const meterial = new THREE.ShaderMaterial({
             fragmentShader : fShader.glslCode,
-            vertexShader : vShader.glslCode
+            vertexShader : vShader.glslCode,
+            uniforms: uniforms
+
         });
     
         this._threeGeometry = new THREE.Mesh( geometry, meterial);
@@ -310,13 +318,7 @@ o
         
         //Hide existing Video element
         let largeVideo = document.getElementById("largeVideo");
-        // largeVideo.style.visibility="hidden";
-        // largeVideo.style.zIndex=-1;
-        // largeVideo.style.color = "blue";
-
-        //Return dummy stream for debugging
-        // const dummy=document.createElement('canvas');
-        // this._renderCube();
+        console.log("IAM HERE~~~~~~~~~~")
         return this._outputCanvasElement.captureStream(parseInt(frameRate, 10));
         // return dummy.captureStream(parseInt(frameRate, 10));
     }
