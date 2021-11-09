@@ -181,31 +181,11 @@ export default class JitsiStreamBackgroundEffect {
      * @returns {void}
      */
     _renderCube(){
-        //Append Canvas element under largeVideoWrapper div
-        // parent = this._outputCanvasElement.parentElement;
-        // if(parent == null){
-        //     const preview = document.querySelector('#preview');
-        //     if(preview){
-        //         preview.insertBefore(this._outputCanvasElement, preview.firstChild);
-        //     }else{
-
-        //     }
-        // }else if( parent.id == "preview"){
-        //     const preview = document.querySelector('#preview');
-        //     if(preview ==null ){
-        //         const largeVideoWrapper = document.querySelector("#largeVideoWrapper");
-        //         largeVideoWrapper.insertBefore(this._outputCanvasElement, largeVideoWrapper.firstChild);
-        //     }
-        // }
-        
-        // this._threeGeometry.rotation.x += 0.01;
-        // this._threeGeometry.rotation.y += 0.01;
         this._threeRenderer.render(this._threeScene, this._threeCamera);
         this._maskFrameTimerWorker.postMessage({
             id: SET_TIMEOUT,
             timeMs: 1000 / 30
         });
-
     }
 
 
@@ -242,6 +222,39 @@ o
         }
     }
 
+    setupWebGLScene(inputVideoElement, outputCanvasElement) {
+        this._threeScene = new THREE.Scene();
+        const ratio = this._inputVideoElement.width / this._inputVideoElement.height;
+        this._threeCamera = new THREE.OrthographicCamera();
+        this._threeCamera.position.z = 1;
+        this._threeRenderer = new THREE.WebGLRenderer( { canvas: this._outputCanvasElement } );
+        console.log("SHADING_LANG_VER::" +this._threeRenderer.getContext().SHADING_LANGUAGE_VERSION)
+        
+        this._threeRenderer.setSize( ratio*this._inputVideoElement.height, this._inputVideoElement.width);
+        this._threeRenderer.setClearColor( 0x0000ff, 0);
+        
+        const geometry = new THREE.PlaneGeometry(2.0,2.0);
+        const videoTexture = new THREE.VideoTexture(this._inputVideoElement);
+        console.log(fShader)
+        this._inputVideoElement.play();
+        const uniforms = {
+            u_texture   : {type: "t", value: videoTexture},
+            u_resolution: {type: "v2", value: new THREE.Vector2(this._outputCanvasElement.width, this._outputCanvasElement.height)},
+            u_texsize   : {type: "v2", value: new THREE.Vector2(this._inputVideoElement.width, this._inputVideoElement.height)}
+        }
+        const meterial = new THREE.ShaderMaterial({
+            fragmentShader : fShader.glslCode,
+            vertexShader : vShader.glslCode,
+            uniforms: uniforms
+
+        });
+    
+        this._threeGeometry = new THREE.Mesh( geometry, meterial);
+
+        this._threeScene.background = new THREE.Color( 0x0000ff );
+        this._threeScene.add(this._threeGeometry);
+    }
+
     /**
      * Checks if the local track supports this effect.
      *
@@ -270,7 +283,7 @@ o
         this._inputVideoElement.width = parseInt(width, 10);
         this._inputVideoElement.height = parseInt(height, 10);
         this._inputVideoElement.hidden = true;
-        // this._inputVideoElement.muted = true;
+        this._inputVideoElement.muted = true;
         this._inputVideoElement.playsInline = true;
         this._inputVideoElement.autoplay = true;
         this._inputVideoElement.srcObject = this._stream;
@@ -281,48 +294,12 @@ o
             });
         };
 
-        this._threeScene = new THREE.Scene();
-        const ratio = this._inputVideoElement.width / this._inputVideoElement.height;
-        // this._threeCamera = new THREE.PerspectiveCamera( 75, ratio, 0.1, 1000);
-        this._threeCamera = new THREE.OrthographicCamera();
-        this._threeCamera.position.z = 1;
-        this._threeRenderer = new THREE.WebGLRenderer( { canvas: this._outputCanvasElement } );
-        // console.log("SHADING_LANG_VER::" +this._threeRenderer.getContext().SHADING_LANGUAGE_VERSION)
+        this.setupWebGLScene(this._inputVideoElement, this._outputCanvasElement)
         
-        this._threeRenderer.setSize( ratio*window.innerHeight, window.innerHeight);
-        this._threeRenderer.setClearColor( 0x0000ff, 0);
-        
-        // const geometry = new THREE.BoxGeometry(3,3,3);
-        const geometry = new THREE.PlaneGeometry(1.0,1.0);
-        const videoTexture = new THREE.VideoTexture(this._inputVideoElement);
-        console.log(fShader)
-        this._inputVideoElement.play();
-        // const meterial = new THREE.MeshBasicMaterial( {color: 0x00ff00});
-        // const meterial = new THREE.MeshBasicMaterial({ map: videoTexture });
-        const uniforms = {
-            u_texture   : {type: "t", value: videoTexture},
-            u_resolution: {type: "v2", value: new THREE.Vector2(this._outputCanvasElement.width, this._outputCanvasElement.height)},
-            u_texsize   : {type: "v2", value: new THREE.Vector2(this._inputVideoElement.width, this._inputVideoElement.height)}
-        }
-        const meterial = new THREE.ShaderMaterial({
-            fragmentShader : fShader.glslCode,
-            vertexShader : vShader.glslCode,
-            uniforms: uniforms
-
-        });
-    
-        this._threeGeometry = new THREE.Mesh( geometry, meterial);
-
-        this._threeScene.background = new THREE.Color( 0x0000ff );
-        this._threeScene.add(this._threeGeometry);
-        
-        //Hide existing Video element
-        let largeVideo = document.getElementById("largeVideo");
-        console.log("IAM HERE~~~~~~~~~~")
         return this._outputCanvasElement.captureStream(parseInt(frameRate, 10));
-        // return dummy.captureStream(parseInt(frameRate, 10));
     }
 
+    
     /**
      * Stops the capture and render loop.
      *
