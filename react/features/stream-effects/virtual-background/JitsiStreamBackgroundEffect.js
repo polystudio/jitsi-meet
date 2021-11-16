@@ -230,7 +230,7 @@ o
         this._threeRenderer = new THREE.WebGLRenderer( { canvas: this._outputCanvasElement } );
         console.log("SHADING_LANG_VER::" +this._threeRenderer.getContext().SHADING_LANGUAGE_VERSION)
         
-        this._threeRenderer.setSize( ratio*this._inputVideoElement.height, this._inputVideoElement.width);
+        this._threeRenderer.setSize( ratio*this._inputVideoElement.height/8, this._inputVideoElement.width/8);
         this._threeRenderer.setClearColor( 0x0000ff, 0);
         
         const geometry = new THREE.PlaneGeometry(2.0,2.0);
