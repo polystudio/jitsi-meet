@@ -8,11 +8,6 @@ import {
     SET_TIMEOUT,
     timerWorkerScript
 } from './TimerWorker';
-import * as fShader from './shaders/frag'
-import * as vShader from './shaders/vertex'
-
-import * as THREE from 'three';
-import { Scene } from 'three';
 
 /**
  * Represents a modified MediaStream that adds effects to video background.
@@ -39,10 +34,6 @@ export default class JitsiStreamBackgroundEffect {
     startEffect: Function;
     stopEffect: Function;
     _hue: Number;
-    _threeScene: THREE.Scene;
-    _threeCamera: THREE.Camera;
-    _threeRenderer: THREE.WebGLRenderer;
-    _threeGeometry: THREE.Mesh;
 
     /**
      * Represents a modified video MediaStream track.
@@ -68,16 +59,13 @@ export default class JitsiStreamBackgroundEffect {
         this._options = options;
         this._segmentationPixelCount = this._options.width * this._options.height;
 
-        // Bind event handlefdr so it is only bound once for every instance.
+        // Bind event handler so it is only bound once for every instance.
         this._onMaskFrameTimer = this._onMaskFrameTimer.bind(this);
 
         // Workaround for FF issue https://bugzilla.mozilla.org/show_bug.cgi?id=1388974
         this._outputCanvasElement = document.createElement('canvas');
-        
-        // this._outputCanvasElement.getContext('2d');
+        this._outputCanvasElement.getContext('2d');
         this._inputVideoElement = document.createElement('video');
-        
-        
     }
 
     /**
@@ -89,8 +77,7 @@ export default class JitsiStreamBackgroundEffect {
      */
     _onMaskFrameTimer(response: Object) {
         if (response.data.id === TIMEOUT_TICK) {
-            // this._renderMask();
-            this._renderCube();
+            this._renderMask();
         }
     }
 
@@ -104,14 +91,14 @@ export default class JitsiStreamBackgroundEffect {
         const { height, width } = track.getSettings() ?? track.getConstraints();
         const { backgroundType } = this._options.virtualBackground;
 
-        // this._outputCanvasElement.height = height;
-        // this._outputCanvasElement.width = width;
+        this._outputCanvasElement.height = height;
+        this._outputCanvasElement.width = width;
         this._outputCanvasCtx.globalCompositeOperation = 'copy';
 
         // Draw segmentation mask.
 
         // Smooth out the edges.
-        // this._outputCanvasCtx.filter = backgroundType === VIRTUAL_BACKGROUND_TYPE.IMAGE ? 'blur(4px)' : 'blur(8px)';
+        this._outputCanvasCtx.filter = backgroundType === VIRTUAL_BACKGROUND_TYPE.IMAGE ? 'blur(4px)' : 'blur(8px)';
         if (backgroundType === VIRTUAL_BACKGROUND_TYPE.DESKTOP_SHARE) {
             // Save current context before applying transformations.
             this._outputCanvasCtx.save();
@@ -135,7 +122,7 @@ export default class JitsiStreamBackgroundEffect {
             this._outputCanvasCtx.restore();
         }
         this._outputCanvasCtx.globalCompositeOperation = 'source-in';
-        // this._outputCanvasCtx.filter = 'none';
+        this._outputCanvasCtx.filter = 'none';
 
         // Draw the foreground video.
         if (backgroundType === VIRTUAL_BACKGROUND_TYPE.DESKTOP_SHARE) {
@@ -156,9 +143,8 @@ export default class JitsiStreamBackgroundEffect {
         }
 
         // Draw the background.
-
         this._outputCanvasCtx.globalCompositeOperation = 'destination-over';
-        // this._outputCanvasCtx.filter = null;
+        this._outputCanvasCtx.filter = null;
         if (backgroundType === VIRTUAL_BACKGROUND_TYPE.IMAGE
             || backgroundType === VIRTUAL_BACKGROUND_TYPE.DESKTOP_SHARE) {
             this._outputCanvasCtx.drawImage(
@@ -180,14 +166,39 @@ export default class JitsiStreamBackgroundEffect {
      *
      * @returns {void}
      */
-    _renderCube(){
-        this._threeRenderer.render(this._threeScene, this._threeCamera);
+    runInference() {
+        this._model._runInference();
+        const outputMemoryOffset = this._model._getOutputMemoryOffset() / 4;
+
+        for (let i = 0; i < this._segmentationPixelCount; i++) {
+            const background = this._model.HEAPF32[outputMemoryOffset + (i * 2)];
+            const person = this._model.HEAPF32[outputMemoryOffset + (i * 2) + 1];
+            const shift = Math.max(background, person);
+            const backgroundExp = Math.exp(background - shift);
+            const personExp = Math.exp(person - shift);
+
+            // Sets only the alpha component of each pixel.
+            this._segmentationMask.data[(i * 4) + 3] = (255 * personExp) / (backgroundExp + personExp);
+        }
+        this._segmentationMaskCtx.putImageData(this._segmentationMask, 0, 0);
+    }
+
+    /**
+     * Loop function to render the background mask.
+     *
+     * @private
+     * @returns {void}
+     */
+    _renderMask() {
+        this.resizeSource();
+        this.runInference();
+        this.runPostProcessing();
+
         this._maskFrameTimerWorker.postMessage({
             id: SET_TIMEOUT,
             timeMs: 1000 / 30
         });
     }
-
 
     /**
      * Represents the resize source process.
@@ -214,45 +225,12 @@ export default class JitsiStreamBackgroundEffect {
             this._options.height
         );
         const inputMemoryOffset = this._model._getInputMemoryOffset() / 4;
-o
+
         for (let i = 0; i < this._segmentationPixelCount; i++) {
             this._model.HEAPF32[inputMemoryOffset + (i * 3)] = imageData.data[i * 4] / 255;
             this._model.HEAPF32[inputMemoryOffset + (i * 3) + 1] = imageData.data[(i * 4) + 1] / 255;
             this._model.HEAPF32[inputMemoryOffset + (i * 3) + 2] = imageData.data[(i * 4) + 2] / 255;
         }
-    }
-
-    setupWebGLScene(inputVideoElement, outputCanvasElement) {
-        this._threeScene = new THREE.Scene();
-        const ratio = this._inputVideoElement.width / this._inputVideoElement.height;
-        this._threeCamera = new THREE.OrthographicCamera();
-        this._threeCamera.position.z = 1;
-        this._threeRenderer = new THREE.WebGLRenderer( { canvas: this._outputCanvasElement } );
-        console.log("SHADING_LANG_VER::" +this._threeRenderer.getContext().SHADING_LANGUAGE_VERSION)
-        
-        this._threeRenderer.setSize( ratio*this._inputVideoElement.height/8, this._inputVideoElement.width/8);
-        this._threeRenderer.setClearColor( 0x0000ff, 0);
-        
-        const geometry = new THREE.PlaneGeometry(2.0,2.0);
-        const videoTexture = new THREE.VideoTexture(this._inputVideoElement);
-        console.log(fShader)
-        this._inputVideoElement.play();
-        const uniforms = {
-            u_texture   : {type: "t", value: videoTexture},
-            u_resolution: {type: "v2", value: new THREE.Vector2(this._outputCanvasElement.width, this._outputCanvasElement.height)},
-            u_texsize   : {type: "v2", value: new THREE.Vector2(this._inputVideoElement.width, this._inputVideoElement.height)}
-        }
-        const meterial = new THREE.ShaderMaterial({
-            fragmentShader : fShader.glslCode,
-            vertexShader : vShader.glslCode,
-            uniforms: uniforms
-
-        });
-    
-        this._threeGeometry = new THREE.Mesh( geometry, meterial);
-
-        this._threeScene.background = new THREE.Color( 0x0000ff );
-        this._threeScene.add(this._threeGeometry);
     }
 
     /**
@@ -280,11 +258,17 @@ o
         const { height, frameRate, width }
             = firstVideoTrack.getSettings ? firstVideoTrack.getSettings() : firstVideoTrack.getConstraints();
 
+        this._segmentationMask = new ImageData(this._options.width, this._options.height);
+        this._segmentationMaskCanvas = document.createElement('canvas');
+        this._segmentationMaskCanvas.width = this._options.width;
+        this._segmentationMaskCanvas.height = this._options.height;
+        this._segmentationMaskCtx = this._segmentationMaskCanvas.getContext('2d');
+
+        this._outputCanvasElement.width = parseInt(width, 10);
+        this._outputCanvasElement.height = parseInt(height, 10);
+        this._outputCanvasCtx = this._outputCanvasElement.getContext('2d');
         this._inputVideoElement.width = parseInt(width, 10);
         this._inputVideoElement.height = parseInt(height, 10);
-        this._inputVideoElement.hidden = true;
-        this._inputVideoElement.muted = true;
-        this._inputVideoElement.playsInline = true;
         this._inputVideoElement.autoplay = true;
         this._inputVideoElement.srcObject = this._stream;
         this._inputVideoElement.onloadeddata = () => {
@@ -294,12 +278,9 @@ o
             });
         };
 
-        this.setupWebGLScene(this._inputVideoElement, this._outputCanvasElement)
-        
         return this._outputCanvasElement.captureStream(parseInt(frameRate, 10));
     }
 
-    
     /**
      * Stops the capture and render loop.
      *

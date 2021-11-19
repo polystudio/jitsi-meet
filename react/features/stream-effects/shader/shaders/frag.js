@@ -2,9 +2,9 @@ export const glslCode = `
 #define M_PI 3.1415926535897932384626433832795
 
 // # of circles
-#define NC 8
+#define NC 4
 // Radius of samples
-#define R 0.8
+#define R 6
 // # of arc
 #define NA 8
 
@@ -46,33 +46,18 @@ void main() {
       }
       ca += ga;
     }
-    vec2 st = gl_FragCoord.xy / u_resolution ;
-    // vec2 ss = gl_FragCoord.xy * u_resolution ;
-    int xi = int(floor(gl_FragCoord.x /50.0)) % 5;
-    gl_FragColor = texture2D(u_texture, st) *  a[xi];
+    vec2 res = u_resolution / u_texsize.xy;
+    vec2 img_size = u_texsize.xy * max(res.x, res.y);
+    vec2 img_org = 0.5 * (u_resolution.xy - img_size);
+    vec2 uv = (gl_FragCoord.xy - img_org) / img_size;
+    // vec2 st = gl_FragCoord.xy / u_resolution ;
     
-    float max_avg =  0.0;
-    float min_avg =  1.0;
     vec4 smpClr = vec4(0.0, 0.0, 0.0, 0.0);
-    for (si = 0; si < ns ; si ++){
-      vec2 sampleCoord = (gl_FragCoord.xy + sampleCoords[si].xy) / u_resolution;
-      smpClr = texture2D(u_texture, sampleCoord);
+    for (si = 0; si < ns ; si ++) {
+      vec2 sampleCoord =  (0.5 + floor(uv * u_texsize.xy) +  sampleCoords[si] ) /  u_texsize.xy;
+      smpClr = texture2D(u_texture, sampleCoord );
       sampleColors[si] = vec4(smpClr.rgb, getLum(smpClr));
-      // float v_avg = getLum(smpClr); //( smpClr.r + smpClr.g + smpClr.b ) / 3.0;
-      // if ( max_avg < v_avg ) {
-      //   max_avg = v_avg;
-      // }else if ( min_avg > v_avg ) {
-      //   min_avg = v_avg;
-      // }
     }
-    // vec4 retColor =  vec4(0.0, 0.0, 0.0, 0.0); //sampleColors[si]; //vec4(bin[0].rgb / bin[0].a, 1.0);
-
-    // for (si = 0; si < ns ; si ++){
-    //   vec4 smpClr = sampleColors[si];
-    //   float v_avg = getLum(smpClr); //( smpClr.r + smpClr.g + smpClr.b ) / 3.0;
-    //   int bin_i = int( ( ( v_avg - min_avg ) * float(ns) ) / ( max_avg - min_avg ) + 0.5 );
-    //   bin[bin_i] += vec4( smpClr.rgb, 1.0);
-    // }
 
     // retColor /= float(ns);
     int middle = ns / 2;
@@ -89,19 +74,7 @@ void main() {
       sampleColors[j+1] = tmp;
     }
     vec4 retColor = sampleColors[middle]; 
-    // vec4 retColor = vec4(0.0, 0.0, 0.0, 0.0); 
-    // for ( si = 0; si<middle ; ){
-    //   if ( bin[si].a > 0.0 ) { 
-    //     retColor = bin[si] ; 
-    //     si += int(bin[si].a);
-    //   }else{
-    //     si += 1;
-    //   }
-    // }
 
-    gl_FragColor = retColor;
-
-    // gl_FragColor = vec4(retColor.rgb /retColor.a, 1.0); // * a[xi] ; //sampleColor * a[xi]; //texture2D(u_texture, st) * a[xi] ;
-    
+    gl_FragColor = vec4 (retColor.rgb, 1.0);
   }
 `;
