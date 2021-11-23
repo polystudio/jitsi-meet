@@ -87,7 +87,7 @@ export default class ShaderEffect {
         this._threeRenderer = new THREE.WebGLRenderer( { canvas: this._outputCanvasElement } );
         console.log("SHADING_LANG_VER::" +this._threeRenderer.getContext().SHADING_LANGUAGE_VERSION)
         
-        let rendererSize = {height: this._inputVideoElement.height/6, width: this._inputVideoElement.width/6}
+        let rendererSize = {height: this._inputVideoElement.height/3, width: this._inputVideoElement.width/3}
         this._threeRenderer.setSize( rendererSize.width, rendererSize.height );
         this._threeRenderer.setClearColor( 0x0000ff, 0);
         
