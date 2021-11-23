@@ -11,6 +11,7 @@
     .thumbnail:hover,
     .blur:hover,
     .slight-blur:hover,
+    .cartoon:hover,
     .virtual-background-none:hover {
         opacity: 0.5;
         border: 2px solid #99bbf3;
@@ -64,6 +65,17 @@
         border: 2px solid #246fe5;
         padding: 0 10px;
     }
+    .cartoon-image {
+        box-shadow: inset 0 0 12px #000000;
+        background: #a4a4a4;
+        padding: 0 10px;
+    }
+    .cartoon-image-selected {
+        box-shadow: inset 0 0 12px #000000;
+        background: #a4a4a4;
+        border: 2px solid #246fe5;
+        padding: 0 10px;
+    }
     .virtual-background-none {
         background: #525252;
         padding: 0 10px;
@@ -89,6 +101,7 @@
         .virtual-background-none,
         .thumbnail,
         .blur,
+        .cartoon-image,
         .slight-blur {
             height: 60px;
             width: 60px;
@@ -97,6 +110,7 @@
         .thumbnail-selected,
         .none-selected,
         .blur-selected,
+        .cartoon-image-selected,
         .slight-blur-selected {
             height: 60px;
             width: 60px;
