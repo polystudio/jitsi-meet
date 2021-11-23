@@ -1,5 +1,6 @@
 // @flow
 
+import { createShaderEffect } from '../../stream-effects/shader';
 import { createVirtualBackgroundEffect } from '../../stream-effects/virtual-background';
 
 import logger from './logger';
@@ -13,15 +14,23 @@ import logger from './logger';
 export default function loadEffects(store: Object): Promise<any> {
     const state = store.getState();
     const virtualBackground = state['features/virtual-background'];
-
-    const backgroundPromise = virtualBackground.backgroundEffectEnabled
-        ? createVirtualBackgroundEffect(virtualBackground)
+    
+    let effectPromise = null;
+    if ( virtualBackground.selectedThumbnail=="cartoon-image" ) {
+        // effectPromise = createVirtualBackgroundEffect(virtualBackground)
+        effectPromise = createShaderEffect(virtualBackground)
             .catch(error => {
                 logger.error('Failed to obtain the background effect instance with error: ', error);
 
                 return Promise.resolve();
-            })
-        : Promise.resolve();
+            });
+    }else if (virtualBackground.backgroundEffectEnabled) {
+        effectPromise = createShaderEffect(virtualBackground)
+            .catch(error => {
+                logger.error('Failed to obtain the shader effect instance with error: ', error);
 
-    return Promise.all([ backgroundPromise ]);
+                return Promise.resolve();
+            });
+    } else { effectPromise = Promise.resolve();}
+    return Promise.all([ effectPromise ]);
 }
