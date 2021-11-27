@@ -32,6 +32,8 @@ export default class ShaderEffect {
     _threeCamera: THREE.Camera;
     _threeRenderer: THREE.WebGLRenderer;
     _threeGeometry: THREE.Mesh;
+    _material: THREE.ShaderMaterial;
+    _videoTexture: THREE.VideoTexture;
 
     /**
      * Represents a modified video MediaStream track.
@@ -65,50 +67,78 @@ export default class ShaderEffect {
         }
     }
 
+    _resizeElements(){
+        const firstVideoTrack = this._stream.getVideoTracks()[0];
+        const { height, frameRate, width }
+            = firstVideoTrack.getSettings ? firstVideoTrack.getSettings() : firstVideoTrack.getConstraints();
+        let changed = false;
+        if (parseInt(width, 10) != this._inputVideoElement.width || 
+        parseInt(height, 10) != this._inputVideoElement.height ) {
+            changed = true;
+            console.log("changed???::" +changed)
+            this._inputVideoElement.width = parseInt(width, 10);
+            this._inputVideoElement.height = parseInt(height, 10);
+
+            this._outputCanvasElement.width = parseInt(width, 10);
+            this._outputCanvasElement.height = parseInt(height, 10);
+        }
+        return {height, frameRate, width, changed}
+    }
+
+    _resizeScene() {
+        const {height, frameRate, width, changed} = this._resizeElements();
+
+        if (changed) {
+            console.log("SHADING_LANG_VER::" +this._threeRenderer.getContext().SHADING_LANGUAGE_VERSION)
+            let rendererSize = {height: this._inputVideoElement.height/3, width: this._inputVideoElement.width/3}
+            this._threeRenderer.setSize( rendererSize.width, rendererSize.height );
+            this._threeRenderer.setClearColor( 0x0000ff, 0);
+        
+            // const uniforms = {
+            //     u_texture   : {type: "t", value: this._videoTexture},
+            //     u_resolution: {type: "v2", value: new THREE.Vector2(this._outputCanvasElement.width, this._outputCanvasElement.height)},
+            //     u_texsize   : {type: "v2", value: new THREE.Vector2(this._inputVideoElement.width, this._inputVideoElement.height)}
+            // };
+            // this._meterial.setValues({uniforms: uniforms });
+        }
+    }
+
     /**
      * Render WebGL Scene
      *
      * @returns {void}
      */
     _renderScene(){
+        // this._resizeScene();
         this._threeRenderer.render(this._threeScene, this._threeCamera);
         this._renderFrameTimerWorker.postMessage({
             id: SET_TIMEOUT,
             timeMs: 1000 / 30
         });
     }
-
-
-    setupWebGLScene(inputVideoElement, outputCanvasElement) {
+    
+    setupWebGLScene() {
         this._threeScene = new THREE.Scene();
-        const ratio = this._inputVideoElement.width / this._inputVideoElement.height;
         this._threeCamera = new THREE.OrthographicCamera();
         this._threeCamera.position.z = 1;
+        
         this._threeRenderer = new THREE.WebGLRenderer( { canvas: this._outputCanvasElement } );
-        console.log("SHADING_LANG_VER::" +this._threeRenderer.getContext().SHADING_LANGUAGE_VERSION)
-        
-        let rendererSize = {height: this._inputVideoElement.height/3, width: this._inputVideoElement.width/3}
-        this._threeRenderer.setSize( rendererSize.width, rendererSize.height );
-        this._threeRenderer.setClearColor( 0x0000ff, 0);
-        
-        const geometry = new THREE.PlaneGeometry(2.0,2.0);
-        const videoTexture = new THREE.VideoTexture(this._inputVideoElement);
-        console.log(fShader)
-        this._inputVideoElement.play();
+        this._videoTexture = new THREE.VideoTexture(this._inputVideoElement);
+        this._resizeScene();
         const uniforms = {
-            u_texture   : {type: "t", value: videoTexture},
+            u_texture   : {type: "t", value: this._videoTexture},
             u_resolution: {type: "v2", value: new THREE.Vector2(this._outputCanvasElement.width, this._outputCanvasElement.height)},
             u_texsize   : {type: "v2", value: new THREE.Vector2(this._inputVideoElement.width, this._inputVideoElement.height)}
         }
-        const meterial = new THREE.ShaderMaterial({
+        
+        this._meterial = new THREE.ShaderMaterial({
             fragmentShader : fShader.glslCode,
             vertexShader : vShader.glslCode,
             uniforms: uniforms
-
         });
-    
-        this._threeGeometry = new THREE.Mesh( geometry, meterial);
-
+        const geometry = new THREE.PlaneGeometry(2.0,2.0);
+        this._inputVideoElement.play();
+        this._threeGeometry = new THREE.Mesh( geometry, this._meterial);
         this._threeScene.background = new THREE.Color( 0x0000ff );
         this._threeScene.add(this._threeGeometry);
     }
@@ -134,15 +164,8 @@ export default class ShaderEffect {
         this._stream = stream;
         this._renderFrameTimerWorker = new Worker(timerWorkerScript, { name: 'Blur effect worker' });
         this._renderFrameTimerWorker.onmessage = this._onRenderFrameTimer;
-        const firstVideoTrack = this._stream.getVideoTracks()[0];
-        const { height, frameRate, width }
-            = firstVideoTrack.getSettings ? firstVideoTrack.getSettings() : firstVideoTrack.getConstraints();
 
-        this._inputVideoElement.width = parseInt(width, 10);
-        this._inputVideoElement.height = parseInt(height, 10);
-
-        this._outputCanvasElement.width = parseInt(width, 10);
-        this._outputCanvasElement.height = parseInt(height, 10);
+        const { height, frameRate, width, changed } = this._resizeElements();
         this._inputVideoElement.hidden = true;
         this._inputVideoElement.muted = true;
         this._inputVideoElement.playsInline = true;
@@ -155,8 +178,8 @@ export default class ShaderEffect {
             });
         };
 
-        this.setupWebGLScene(this._inputVideoElement, this._outputCanvasElement)
-        
+        this.setupWebGLScene()
+        // console.log(new Error("StartEffect").stack);
         return this._outputCanvasElement.captureStream(parseInt(frameRate, 10));
     }
 
@@ -170,7 +193,10 @@ export default class ShaderEffect {
         this._renderFrameTimerWorker.postMessage({
             id: CLEAR_TIMEOUT
         });
-
+        this._inputVideoElement.pause()
+        this._inputVideoElement.remove()
+        this._outputCanvasElement.remove()
+        console.log(new Error("StopEffect").stack);
         this._renderFrameTimerWorker.terminate();
     }
 }

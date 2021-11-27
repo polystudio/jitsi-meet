@@ -198,9 +198,9 @@ function VirtualBackground({
 
     const enablecartoonimage = useCallback(async () => {
         setOptions({
-            backgroundType: VIRTUAL_BACKGROUND_TYPE.BLUR,
+            backgroundType: VIRTUAL_BACKGROUND_TYPE.CARTOON,
             enabled: true,
-            blurValue: 6,
+            blurValue: 0,
             selectedThumbnail: 'cartoon-image'
         });
         logger.info('"cartoon-image" option setted for virtual background preview!');

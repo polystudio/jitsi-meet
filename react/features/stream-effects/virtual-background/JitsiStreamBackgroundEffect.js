@@ -43,7 +43,6 @@ export default class JitsiStreamBackgroundEffect {
      * @param {Object} options - Segmentation dimensions.
      */
     constructor(model: Object, options: Object) {
-        console.log("!!!!!!!!!!OU SHOULD NOT BE HERE!!!!!!!!!");
         this._options = options;
         this._hue =0
         if (this._options.virtualBackground.backgroundType === VIRTUAL_BACKGROUND_TYPE.IMAGE) {

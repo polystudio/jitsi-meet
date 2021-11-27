@@ -30,8 +30,8 @@ export function toggleBackgroundEffect(options: Object, jitsiTrack: Object) {
                     if (options.selectedThumbnail == "cartoon-image") {
                         await jitsiTrack.setEffect(await createShaderEffect(virtualBackground, dispatch));
                     } else {
-                        // await jitsiTrack.setEffect(await createVirtualBackgroundEffect(virtualBackground, dispatch));
-                        await jitsiTrack.setEffect(await createShaderEffect(virtualBackground, dispatch)); 
+                        await jitsiTrack.setEffect(await createVirtualBackgroundEffect(virtualBackground, dispatch));
+                        // await jitsiTrack.setEffect(await createShaderEffect(virtualBackground, dispatch)); 
                     }
                 } else {
                     await jitsiTrack.setEffect(undefined);
