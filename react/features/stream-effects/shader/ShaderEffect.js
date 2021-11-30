@@ -63,6 +63,7 @@ export default class ShaderEffect {
      */
     _onRenderFrameTimer(response: Object) {
         if (response.data.id === TIMEOUT_TICK) {
+            this._resizeScene();
             this._renderScene();
         }
     }
@@ -75,7 +76,7 @@ export default class ShaderEffect {
         if (parseInt(width, 10) != this._inputVideoElement.width || 
         parseInt(height, 10) != this._inputVideoElement.height ) {
             changed = true;
-            console.log("changed???::" +changed)
+            console.log("changed::" +changed)
             this._inputVideoElement.width = parseInt(width, 10);
             this._inputVideoElement.height = parseInt(height, 10);
 
@@ -93,13 +94,17 @@ export default class ShaderEffect {
             let rendererSize = {height: this._inputVideoElement.height/3, width: this._inputVideoElement.width/3}
             this._threeRenderer.setSize( rendererSize.width, rendererSize.height );
             this._threeRenderer.setClearColor( 0x0000ff, 0);
-        
-            // const uniforms = {
-            //     u_texture   : {type: "t", value: this._videoTexture},
-            //     u_resolution: {type: "v2", value: new THREE.Vector2(this._outputCanvasElement.width, this._outputCanvasElement.height)},
-            //     u_texsize   : {type: "v2", value: new THREE.Vector2(this._inputVideoElement.width, this._inputVideoElement.height)}
-            // };
-            // this._meterial.setValues({uniforms: uniforms });
+            if (this._material)  {
+                const uniforms = {
+                    u_texture   : {type: "t", value: this._videoTexture},
+                    u_resolution: {type: "v2", value: new THREE.Vector2(this._outputCanvasElement.width, this._outputCanvasElement.height)},
+                    u_texsize   : {type: "v2", value: new THREE.Vector2(this._inputVideoElement.width, this._inputVideoElement.height)}
+                };
+                this._material.uniforms.u_resolution.value = new THREE.Vector2(this._outputCanvasElement.width, this._outputCanvasElement.height);
+                this._material.uniforms.u_texsize.value = new THREE.Vector2(this._inputVideoElement.width, this._inputVideoElement.height);
+
+            }
+            console.log('height: %s , width: %s , frameRate: %d , changed: %s', height, width, frameRate, String(changed))
         }
     }
 
@@ -109,7 +114,6 @@ export default class ShaderEffect {
      * @returns {void}
      */
     _renderScene(){
-        // this._resizeScene();
         this._threeRenderer.render(this._threeScene, this._threeCamera);
         this._renderFrameTimerWorker.postMessage({
             id: SET_TIMEOUT,
@@ -121,24 +125,25 @@ export default class ShaderEffect {
         this._threeScene = new THREE.Scene();
         this._threeCamera = new THREE.OrthographicCamera();
         this._threeCamera.position.z = 1;
-        
         this._threeRenderer = new THREE.WebGLRenderer( { canvas: this._outputCanvasElement } );
+        
+        const geometry = new THREE.PlaneGeometry(2.0,2.0);
         this._videoTexture = new THREE.VideoTexture(this._inputVideoElement);
         this._resizeScene();
+        this._inputVideoElement.play();
+        
         const uniforms = {
             u_texture   : {type: "t", value: this._videoTexture},
             u_resolution: {type: "v2", value: new THREE.Vector2(this._outputCanvasElement.width, this._outputCanvasElement.height)},
             u_texsize   : {type: "v2", value: new THREE.Vector2(this._inputVideoElement.width, this._inputVideoElement.height)}
         }
-        
-        this._meterial = new THREE.ShaderMaterial({
+        this._material = new THREE.ShaderMaterial({
             fragmentShader : fShader.glslCode,
             vertexShader : vShader.glslCode,
             uniforms: uniforms
         });
-        const geometry = new THREE.PlaneGeometry(2.0,2.0);
-        this._inputVideoElement.play();
-        this._threeGeometry = new THREE.Mesh( geometry, this._meterial);
+        
+        this._threeGeometry = new THREE.Mesh( geometry, this._material);
         this._threeScene.background = new THREE.Color( 0x0000ff );
         this._threeScene.add(this._threeGeometry);
     }
@@ -165,7 +170,10 @@ export default class ShaderEffect {
         this._renderFrameTimerWorker = new Worker(timerWorkerScript, { name: 'Blur effect worker' });
         this._renderFrameTimerWorker.onmessage = this._onRenderFrameTimer;
 
-        const { height, frameRate, width, changed } = this._resizeElements();
+        const firstVideoTrack = this._stream.getVideoTracks()[0];
+        const { height, frameRate, width }
+            = firstVideoTrack.getSettings ? firstVideoTrack.getSettings() : firstVideoTrack.getConstraints();
+
         this._inputVideoElement.hidden = true;
         this._inputVideoElement.muted = true;
         this._inputVideoElement.playsInline = true;
@@ -178,8 +186,7 @@ export default class ShaderEffect {
             });
         };
 
-        this.setupWebGLScene()
-        // console.log(new Error("StartEffect").stack);
+        this.setupWebGLScene();
         return this._outputCanvasElement.captureStream(parseInt(frameRate, 10));
     }
 

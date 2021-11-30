@@ -31,7 +31,6 @@ export function toggleBackgroundEffect(options: Object, jitsiTrack: Object) {
                         await jitsiTrack.setEffect(await createShaderEffect(virtualBackground, dispatch));
                     } else {
                         await jitsiTrack.setEffect(await createVirtualBackgroundEffect(virtualBackground, dispatch));
-                        // await jitsiTrack.setEffect(await createShaderEffect(virtualBackground, dispatch)); 
                     }
                 } else {
                     await jitsiTrack.setEffect(undefined);

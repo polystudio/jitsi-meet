@@ -19,7 +19,6 @@ export default function loadEffects(store: Object): Promise<any> {
     console.log("loadEffects::");
     console.log(virtualBackground);
     if ( virtualBackground.selectedThumbnail=="cartoon-image" ) {
-        // effectPromise = createVirtualBackgroundEffect(virtualBackground)
         effectPromise = createShaderEffect(virtualBackground)
             .catch(error => {
                 logger.error('Failed to obtain the background effect instance with error: ', error);
@@ -28,7 +27,7 @@ export default function loadEffects(store: Object): Promise<any> {
     }else if ( Platform.OS == 'ios') {
         effectPromise = Promise.resolve();
     }else if (virtualBackground.backgroundEffectEnabled) {
-        effectPromise = createVirtualBackgroundEffect(virtualBackground)
+        effectPromise =  createVirtualBackgroundEffect(virtualBackground)
             .catch(error => {
                 logger.error('Failed to obtain the shader effect instance with error: ', error);
 
