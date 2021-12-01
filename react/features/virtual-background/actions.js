@@ -19,7 +19,7 @@ export function toggleBackgroundEffect(options: Object, jitsiTrack: Object) {
         console.log(options);
         await dispatch(backgroundEnabled(options.enabled));
         await dispatch(setVirtualBackground(options));
-        const state = getState();
+        const state = getState(); 
         console.log(state);
         const virtualBackground = state['features/virtual-background'];
         console.log(virtualBackground);
@@ -29,6 +29,9 @@ export function toggleBackgroundEffect(options: Object, jitsiTrack: Object) {
                 if (options.enabled) {
                     if (options.selectedThumbnail == "cartoon-image") {
                         await jitsiTrack.setEffect(await createShaderEffect(virtualBackground, dispatch));
+                        // Reloading jitsiTrack to fix ios bug blacking out camera
+                        await jitsiTrack.mute();
+                        await jitsiTrack.unmute();                        
                     } else {
                         await jitsiTrack.setEffect(await createVirtualBackgroundEffect(virtualBackground, dispatch));
                     }

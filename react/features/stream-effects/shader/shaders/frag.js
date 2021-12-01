@@ -4,7 +4,7 @@ export const glslCode = `
 // # of circles
 #define NC 6
 // Radius of samples
-#define R 40
+#define R 60
 // # of arc
 #define NA 8
 
@@ -73,6 +73,7 @@ void main() {
     for (si = 0; si < ns ; si ++) {
       vec2 texCoord =  (floor(uv * u_texsize.xy + 0.5) +  sampleCoords[si] ) /  u_texsize.xy;
       smpClr = texture2D(u_texture, texCoord );
+      // vec4 tmpClr = rgb2hsv(smpClr.rgb);
       sampleColors[si] = vec4(smpClr.rgb, getLum(smpClr));
     }
 
@@ -81,6 +82,8 @@ void main() {
     int i=0;
     int j=0;
     vec4 tmp;
+
+    // ###### Median Effect
     for ( i = 1 ; i < ns; i++) {
       j = i;
       tmp = sampleColors[i];
@@ -89,8 +92,24 @@ void main() {
       }
       sampleColors[j+1] = tmp;
     }
-    vec3 retColor = rgb2hsv(sampleColors[middle].rgb); 
-    retColor = vec3(retColor.x, retColor.y, ROUND(retColor.z)*1.3);
+    vec4 retColor = sampleColors[middle-3] + sampleColors[middle-2] + sampleColors[middle-1] + sampleColors[middle] + sampleColors[middle+1] + sampleColors[middle+2] + sampleColors[middle+3];
+    retColor /= 7.0;
+    // ###### Median End
+
+    // ###### Blur Effect
+    // for ( i = 1 ; i < ns; i++) {
+    //   tmp += sampleColors[i];
+    // }
+    // tmp = tmp / float(ns);
+    // vec3 retColor = rgb2hsv(tmp.rgb); 
+    // ###### Blur End
+
+    // // Rounding luminance
+    retColor = vec4(rgb2hsv(retColor.rgb), 1.0);
+    retColor = vec4(retColor.x, retColor.y, ROUND(retColor.z)*1.3, 1.0);
     gl_FragColor = vec4 (hsv2rgb(retColor.xyz), 1.0);
+
+    // No post-processing
+    // gl_FragColor = retColor;
   }
 `;
