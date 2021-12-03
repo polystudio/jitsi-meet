@@ -200,7 +200,7 @@
         "errorValidation": "Number validation failed",
         "iWantToDialIn": "I want to dial in",
         "joinAudioByPhone": "폰 오디오로 입장하기",
-        "joinMeeting": "👻 운동장 입장하기 🎃",
+        "joinMeeting": "☃️ 운동장 입장하기 🏔",
         "joinWithoutAudio": "오디오 없이 입장하기",
         "initiated": "Call initiated",
         "linkCopied": "Link copied to clipboard",
@@ -373,12 +373,29 @@
         "title": "문서 공유"
     },
     "virtualBackground": {
-        "title": "배경",
-        "enableBlur": "흐린 배경 활성화",
+        "apply": "적용",
+        "title": "그림자 & 카메라 효과",
+        "blur": "그림자효과+",
+        "slightBlur": "그림자효과",
+        "cartoon": "카툰효과",
         "removeBackground": "배경 제거",
-        "uploadImage": "이미지 업로드",
+        "addBackground": "배경 추가",
+        "enableBlur": "흐린 배경 활성화",
         "pleaseWait": "잠시만 기다려주세요...",
-        "none": "없음"
+        "none": "없음",
+        "uploadedImage": "이미지 업로드 {{index}}",
+        "deleteImage": "이미지 제거",
+        "image1" : "이미지1",
+        "image2" : "이미지2",
+        "image3" : "이미지3",
+        "image4" : "이미지4",
+        "image5" : "이미지5",
+        "image6" : "이미지6 ",
+        "image7" : "이미지7",
+        "desktopShareError": "Could not create desktop share",
+        "desktopShare":"데스크탑 공유",
+        "webAssemblyWarning": "WebAssembly not supported",
+        "backgroundEffectError": "Failed to apply background effect."
     },
     "feedback": {
         "average": "보통",
@@ -712,7 +729,7 @@
             "toggleCamera": "카메라 전환",
             "videomute": "비디오 비활성화 전환",
             "videoblur": "",
-            "selectBackground": "배경 선택"
+            "selectBackground": "그림자 효과"
         },
         "addPeople": "통화에 사용자 추가",
         "audioSettings": "오디오 설정",
@@ -763,7 +780,7 @@
         "toggleCamera": "카메라 전환",
         "videomute": "카메라 시작/중지",
         "videoSettings": "비디오 설정",
-        "selectBackground": "배경 선택",
+        "selectBackground": "그림자 효과",
         "startvideoblur": "내 배경을 흐리게",
         "stopvideoblur": "배경 흐림 비활성화"
     },

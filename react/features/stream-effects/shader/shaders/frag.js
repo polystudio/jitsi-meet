@@ -4,9 +4,9 @@ export const glslCode = `
 // # of circles
 #define NC 6
 // Radius of samples
-#define R 60
+#define R 40
 // # of arc
-#define NA 8
+#define NA 6
 
 #define ROUND(x) round(x*10.0)*0.1
 
@@ -34,7 +34,8 @@ vec3 hsv2rgb(vec3 c)
 }
 
 float getLum(vec4 color){
-  return dot(vec3(0.30, 0.59, 0.11), color.xyz);
+  return distance(color.rgb, vec3(0,0,0));
+  // return dot(vec3(0.30, 0.59, 0.11), color.xyz);
   // return (color.r + color.g + color.b) /3.0 ;
 }
 
@@ -96,13 +97,13 @@ void main() {
     retColor /= 7.0;
     // ###### Median End
 
-    // ###### Blur Effect
+    // // ###### Blur Effect
     // for ( i = 1 ; i < ns; i++) {
     //   tmp += sampleColors[i];
     // }
     // tmp = tmp / float(ns);
-    // vec3 retColor = rgb2hsv(tmp.rgb); 
-    // ###### Blur End
+    // vec4 retColor = tmp;
+    // // ###### Blur End
 
     // // Rounding luminance
     retColor = vec4(rgb2hsv(retColor.rgb), 1.0);

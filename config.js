@@ -514,40 +514,40 @@ var config = {
     // - it's impossible to control the placement of buttons
     // - 'desktop' controls the "Share your screen" button
     // - if `toolbarButtons` is undefined, we fallback to enabling all buttons on the UI
-    // toolbarButtons: [
-    //    'camera',
-    //    'chat',
+    toolbarButtons: [
+        'camera',
+        'chat',
     //    'closedcaptions',
-    //    'desktop',
+        'desktop',
     //    'download',
     //    'embedmeeting',
     //    'etherpad',
     //    'feedback',
     //    'filmstrip',
-    //    'fullscreen',
-    //    'hangup',
-    //    'help',
+        'fullscreen',
+        'hangup',
+        'help',
     //    'invite',
     //    'livestreaming',
-    //    'microphone',
-    //    'mute-everyone',
+        'microphone',
+        'mute-everyone',
     //    'mute-video-everyone',
-    //    'participants-pane',
-    //    'profile',
-    //    'raisehand',
+        'participants-pane',
+        'profile',
+        'raisehand',
     //    'recording',
     //    'security',
-    //    'select-background',
-    //    'settings',
-    //    'shareaudio',
-    //    'sharedvideo',
-    //    'shortcuts',
+        'select-background',
+        'settings',
+        'shareaudio',
+        'sharedvideo',
+        'shortcuts',
     //    'stats',
-    //    'tileview',
-    //    'toggle-camera',
-    //    'videoquality',
-    //    '__end'
-    // ],
+        'tileview',
+        'toggle-camera',
+        'videoquality',
+        '__end'
+    ],
 
     // Holds values related to toolbar visibility control.
     // toolbarConfig: {
@@ -601,7 +601,7 @@ var config = {
 
     // List of pre meeting screens buttons to hide. The values must be one or more of the 5 allowed buttons:
     // 'microphone', 'camera', 'select-background', 'invite', 'settings'
-    // hiddenPremeetingButtons: [],
+    hiddenPremeetingButtons: ['invite'],
 
     // Stats
     //
