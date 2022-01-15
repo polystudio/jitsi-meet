@@ -20,6 +20,7 @@ import { NOTIFICATION_TIMEOUT_TYPE, showErrorNotification } from '../../notifica
 import { toggleBackgroundEffect, virtualBackgroundTrackChanged } from '../actions';
 import { IMAGES, BACKGROUNDS_LIMIT, VIRTUAL_BACKGROUND_TYPE, type Image } from '../constants';
 import { toDataURL } from '../functions';
+import { Platform } from '../../base/react';
 import logger from '../logger';
 
 import UploadImageButton from './UploadImageButton';
@@ -197,6 +198,23 @@ function VirtualBackground({
         }
     }, [ enableSlideBlur ]);
 
+    const enablecartoonimage = useCallback(async () => {
+        setOptions({
+            backgroundType: VIRTUAL_BACKGROUND_TYPE.CARTOON,
+            enabled: true,
+            blurValue: 0,
+            selectedThumbnail: 'cartoon-image'
+        });
+        logger.info('"cartoon-image" option setted for virtual background preview!');
+
+    }, []);
+
+    const enablecartoonimageKeyPress = useCallback(e => {
+        if (e.key === ' ' || e.key === 'Enter') {
+            e.preventDefault();
+            enablecartoonimage();
+        }
+    }, [ enablecartoonimage ]);
 
     const shareDesktop = useCallback(async () => {
         if (disableScreensharingVirtualBackground) {
@@ -394,7 +412,7 @@ function VirtualBackground({
                         setLoading = { setLoading }
                         setOptions = { setOptions }
                         setStoredImages = { setStoredImages }
-                        showLabel = { previewIsLoaded }
+                        showLabel = { previewIsLoaded && Platform.OS != 'ios'}
                         storedImages = { storedImages } />}
                     <div
                         className = 'virtual-background-dialog'
@@ -416,36 +434,55 @@ function VirtualBackground({
                             </div>
                         </Tooltip>
                         <Tooltip
-                            content = { t('virtualBackground.slightBlur') }
+                            content = { t('virtualBackground.cartoon') }
                             position = { 'top' }>
                             <div
-                                aria-checked = { _selectedThumbnail === 'slight-blur' }
-                                aria-label = { t('virtualBackground.slightBlur') }
-                                className = { _selectedThumbnail === 'slight-blur'
-                                    ? 'background-option slight-blur-selected' : 'background-option slight-blur' }
-                                onClick = { enableSlideBlur }
-                                onKeyPress = { enableSlideBlurKeyPress }
+                                aria-checked = { _selectedThumbnail === 'cartoon-image' }
+                                aria-label = { t('virtualBackground.cartoon') }
+                                className = { _selectedThumbnail === 'cartoon-image'
+                                    ? 'background-option cartoon-image-selected' : 'background-option cartoon-image' }
+                                onClick = { enablecartoonimage }
+                                onKeyPress = { enablecartoonimageKeyPress }
                                 role = 'radio'
                                 tabIndex = { 0 }>
-                                {t('virtualBackground.slightBlur')}
+                                {t('virtualBackground.cartoon')}
                             </div>
                         </Tooltip>
-                        <Tooltip
-                            content = { t('virtualBackground.blur') }
-                            position = { 'top' }>
-                            <div
-                                aria-checked = { _selectedThumbnail === 'blur' }
-                                aria-label = { t('virtualBackground.blur') }
-                                className = { _selectedThumbnail === 'blur' ? 'background-option blur-selected'
-                                    : 'background-option blur' }
-                                onClick = { enableBlur }
-                                onKeyPress = { enableBlurKeyPress }
-                                role = 'radio'
-                                tabIndex = { 0 }>
-                                {t('virtualBackground.blur')}
-                            </div>
-                        </Tooltip>
-                        {!disableScreensharingVirtualBackground && (
+                        {Platform.OS != 'ios' &&
+                            <Tooltip
+                                content = { t('virtualBackground.slightBlur') }
+                                position = { 'top' }>
+                                <div
+                                    aria-checked = { _selectedThumbnail === 'slight-blur' }
+                                    aria-label = { t('virtualBackground.slightBlur') }
+                                    className = { _selectedThumbnail === 'slight-blur'
+                                        ? 'background-option slight-blur-selected' : 'background-option slight-blur' }
+                                    onClick = { enableSlideBlur }
+                                    onKeyPress = { enableSlideBlurKeyPress }
+                                    role = 'radio'
+                                    tabIndex = { 0 }>
+                                    {t('virtualBackground.slightBlur')}
+                                </div>
+                            </Tooltip>
+                        }
+                        {Platform.OS != 'ios' &&
+                            <Tooltip
+                                content = { t('virtualBackground.blur') }
+                                position = { 'top' }>
+                                <div
+                                    aria-checked = { _selectedThumbnail === 'blur' }
+                                    aria-label = { t('virtualBackground.blur') }
+                                    className = { _selectedThumbnail === 'blur' ? 'background-option blur-selected'
+                                        : 'background-option blur' }
+                                    onClick = { enableBlur }
+                                    onKeyPress = { enableBlurKeyPress }
+                                    role = 'radio'
+                                    tabIndex = { 0 }>
+                                    {t('virtualBackground.blur')}
+                                </div>
+                            </Tooltip>
+                        }
+                        {Platform.OS != 'ios' &&
                             <Tooltip
                                 content = { t('virtualBackground.desktopShare') }
                                 position = { 'top' }>
@@ -465,8 +502,8 @@ function VirtualBackground({
                                         src = { IconShareDesktop } />
                                 </div>
                             </Tooltip>
-                        )}
-                        {_images.map(image => (
+                        }
+                        {Platform.OS != 'ios' && _images.map(image => (
                             <Tooltip
                                 content = { image.tooltip && t(`virtualBackground.${image.tooltip}`) }
                                 key = { image.id }
@@ -487,7 +524,7 @@ function VirtualBackground({
                                     tabIndex = { 0 } />
                             </Tooltip>
                         ))}
-                        {storedImages.map((image, index) => (
+                        {Platform.OS != 'ios' && storedImages.map((image, index) => (
                             <div
                                 className = { 'thumbnail-container' }
                                 key = { image.id }>

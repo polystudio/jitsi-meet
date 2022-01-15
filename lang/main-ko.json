@@ -157,6 +157,63 @@
         "selectADevice": "디바이스 선택",
         "testAudio": "테스트 사운드 재생"
     },
+    "prejoin": {
+        "audioAndVideoError": "Audio and video error:",
+        "audioDeviceProblem": "There is a problem with your audio device",
+        "audioOnlyError": "Audio error:",
+        "audioTrackError": "Could not create audio track.",
+        "calling": "Calling",
+        "callMe": "Call me",
+        "callMeAtNumber": "Call me at this number:",
+        "configuringDevices": "Configuring devices...",
+        "connectedWithAudioQ": "You’re connected with audio?",
+        "connection": {
+           "good": "Your internet connection looks good!",
+           "nonOptimal": "Your internet connection is not optimal",
+           "poor": "You have a poor internet connection"
+        },
+        "connectionDetails": {
+          "audioClipping": "We expect your audio to be clipped.",
+          "audioHighQuality": "We expect your audio to have excellent quality.",
+          "audioLowNoVideo": "We expect your audio quality to be low and no video.",
+          "goodQuality": "Awesome! Your media quality is going to be great.",
+          "noMediaConnectivity": "We could not find a way to establish media connectivity for this test. This is typically caused by a firewall or NAT.",
+          "noVideo": "We expect that your video will be terrible.",
+          "undetectable": "If you still can not make calls in browser, we recommend that you make sure your speakers, microphone and camera are properly set up, that you have granted your browser rights to use your microphone and camera, and that your browser version is up-to-date. If you still have trouble calling, you should contact the web application developer.",
+          "veryPoorConnection": "We expect your call quality to be really terrible.",
+          "videoFreezing": "We expect your video to freeze, turn black, and be pixelated.",
+          "videoHighQuality": "We expect your video to have good quality.",
+          "videoLowQuality": "We expect your video to have low quality in terms of frame rate and resolution.",
+          "videoTearing": "We expect your video to be pixelated or have visual artefacts."
+        },
+        "copyAndShare": "운동장 링크를 복사하고 공유하기",
+        "dialInMeeting": "Dial into the meeting",
+        "dialInPin": "Dial into the meeting and enter PIN code:",
+        "dialing": "Dialing",
+        "doNotShow": "이 화면을 다음부터 보지 않기",
+        "errorDialOut": "Could not dial out",
+        "errorDialOutDisconnected": "Could not dial out. Disconnected",
+        "errorDialOutFailed": "Could not dial out. Call failed",
+        "errorDialOutStatus": "Error getting dial out status",
+        "errorMissingName": "운동장에 입장하기 위해 닉네임을 입력해 주세요",
+        "errorStatusCode": "Error dialing out, status code: {{status}}",
+        "errorValidation": "Number validation failed",
+        "iWantToDialIn": "I want to dial in",
+        "joinAudioByPhone": "폰 오디오로 입장하기",
+        "joinMeeting": "☃️ 운동장 입장하기 🏔",
+        "joinWithoutAudio": "오디오 없이 입장하기",
+        "initiated": "Call initiated",
+        "linkCopied": "Link copied to clipboard",
+        "lookGood": "마이크가 정상적으로 동작하는 것 같습니다",
+        "or": "or",
+        "premeeting": "Pre meeting",
+        "showScreen": "Enable pre meeting screen",
+        "startWithPhone": "Start with phone audio",
+        "screenSharingError": "스크린 공유 에러:",
+        "videoOnlyError": "비디오 에러:",
+        "videoTrackError": "Could not create video track.",
+        "viewAllNumbers": "view all numbers"
+    },
     "dialog": {
         "accessibilityLabel": {
             "liveStreaming": "실시간 스트리밍:"
@@ -316,12 +373,29 @@
         "title": "문서 공유"
     },
     "virtualBackground": {
-        "title": "배경",
-        "enableBlur": "흐린 배경 활성화",
+        "apply": "적용",
+        "title": "그림자 & 카메라 효과",
+        "blur": "그림자효과+",
+        "slightBlur": "그림자효과",
+        "cartoon": "카툰효과",
         "removeBackground": "배경 제거",
-        "uploadImage": "이미지 업로드",
+        "addBackground": "배경 추가",
+        "enableBlur": "흐린 배경 활성화",
         "pleaseWait": "잠시만 기다려주세요...",
-        "none": "없음"
+        "none": "없음",
+        "uploadedImage": "이미지 업로드 {{index}}",
+        "deleteImage": "이미지 제거",
+        "image1" : "이미지1",
+        "image2" : "이미지2",
+        "image3" : "이미지3",
+        "image4" : "이미지4",
+        "image5" : "이미지5",
+        "image6" : "이미지6 ",
+        "image7" : "이미지7",
+        "desktopShareError": "Could not create desktop share",
+        "desktopShare":"데스크탑 공유",
+        "webAssemblyWarning": "WebAssembly not supported",
+        "backgroundEffectError": "Failed to apply background effect."
     },
     "feedback": {
         "average": "보통",
@@ -655,7 +729,7 @@
             "toggleCamera": "카메라 전환",
             "videomute": "비디오 비활성화 전환",
             "videoblur": "",
-            "selectBackground": "배경 선택"
+            "selectBackground": "그림자 효과"
         },
         "addPeople": "통화에 사용자 추가",
         "audioSettings": "오디오 설정",
@@ -706,7 +780,7 @@
         "toggleCamera": "카메라 전환",
         "videomute": "카메라 시작/중지",
         "videoSettings": "비디오 설정",
-        "selectBackground": "배경 선택",
+        "selectBackground": "그림자 효과",
         "startvideoblur": "내 배경을 흐리게",
         "stopvideoblur": "배경 흐림 비활성화"
     },
@@ -786,12 +860,15 @@
         "enterRoomTitle": "새 회의 시작",
         "getHelp": "도움 받기",
         "roomNameAllowedChars": "회의 이름은 이러한 문자를 포함 할 수 없습니다.: ?, &, :, ', \", %, #.",
+        "headerTitle": "Poly Studio",
+        "headerSubtitle": "함께하는 온라인 운동 플랫폼",
         "go": "계속",
         "goSmall": "계속",
         "join": "가입",
         "info": "정보",
         "privacy": "개인정보",
         "recentList": "최근",
+        "startMeeting": "운동장 만들기",
         "recentListDelete": "삭제",
         "recentListEmpty": "최근 목록이 현재 비어 있습니다. 팀과 채팅하면 여기에서 최근 회의를 모두 찾을 수 있습니다.",
         "reducedUIText": "{{app}}에 오신 것을 환영합니다!",
@@ -809,4 +886,5 @@
         "header": "지원 센터"
     }
 }
+
 

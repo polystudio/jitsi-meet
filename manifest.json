@@ -1,14 +1,14 @@
 {
-  "android_package_name": "org.jitsi.meet",
+  "android_package_name": "com.polystudio.meet",
   "prefer_related_applications": true,
   "related_applications": [
     {
-      "id": "org.jitsi.meet",
+      "id": "com.polystudio.meet",
       "platform": "chromeos_play"
     }
   ],
-  "short_name": "Jitsi Meet",
-  "name": "Jitsi Meet",
+  "short_name": "Polystudio",
+  "name": "Polystudio",
   "icons": [
     {
       "src": "static/pwa/icons/icon192.png",
@@ -34,3 +34,4 @@
   "theme_color": "#17A0DB"
  }
  
+

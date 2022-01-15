@@ -249,9 +249,9 @@ function getDevServerConfig() {
                 warnings: false
             }
         },
-        https: true,
-        host: '127.0.0.1',
-        hot: true,
+        https: false,
+        host: '0.0.0.0',
+        allowedHosts: 'all',
         proxy: {
             '/': {
                 bypass: devServerProxyBypass,

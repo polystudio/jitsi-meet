@@ -27,6 +27,10 @@ import {
 import DropdownButton from './DropdownButton';
 import JoinByPhoneDialog from './dialogs/JoinByPhoneDialog';
 
+var s_nickname;
+var roomname;
+var timerId = null;
+
 type Props = {
 
     /**
@@ -117,6 +121,60 @@ type State = {
      */
     showJoinByPhoneButtons: boolean
 }
+    
+function createCORSRequest(method, url) {
+    var xhr = new XMLHttpRequest();
+    if ("withCredentials" in xhr) {
+  
+      // Check if the XMLHttpRequest object has a "withCredentials" property.
+      // "withCredentials" only exists on XMLHTTPRequest2 objects.
+      xhr.open(method, url, true);
+  
+    } else if (typeof XDomainRequest != "undefined") {
+  
+      // Otherwise, check if XDomainRequest.
+      // XDomainRequest only exists in IE, and is IE's way of making CORS requests.
+      xhr = new XDomainRequest();
+      xhr.open(method, url);
+  
+    } else {
+  
+      // Otherwise, CORS is not supported by the browser.
+      xhr = null;
+  
+    }
+    return xhr;
+}
+
+function RequestUserinfo() {
+    // console.log('[heartbeat] nickname = ' + s_nickname);
+    // console.log('[heartbeat] roomid = ' + roomname);
+
+    let url = 'https://odsjcrnel0.execute-api.ap-northeast-2.amazonaws.com/heart-beat';
+    let s_timestamp = + new Date();
+    let date = new Date(s_timestamp);
+    // console.log('[heartbeat] '+date.getTime());
+    // console.log('[heartbeat] '+date);
+
+    let data = {
+        'timestamp': s_timestamp,
+        'roomid': roomname,
+        'nickname': s_nickname,
+        'url': "mmet.polystudio.io"
+    };
+
+      let xhr = new XMLHttpRequest();
+      xhr = createCORSRequest('POST', url);
+      xhr.setRequestHeader('Content-type', 'application/x-www-form-urlencoded');
+      xhr.onreadystatechange = () => {
+          if (xhr.readyState === 4 && xhr.status === 200) {
+              console.log(xhr.response);
+          } else {
+              console.error(xhr.response);
+          }
+      };
+      xhr.send(JSON.stringify(data));
+  }
 
 /**
  * This component is displayed before joining a meeting.
@@ -155,6 +213,20 @@ class Prejoin extends Component<Props, State> {
      * @returns {void}
      */
     _onJoinButtonClick() {
+
+        console.log('[heartbeat] _onJoinButtonClick');
+        console.log('[heartbeat] nickname = ' + s_nickname);
+        console.log('[heartbeat] roomname = ' + roomname);
+        
+        var timestamp = + new Date();
+        var date = new Date(timestamp);
+        console.log('[heartbeat] '+date.getTime());
+        console.log('[heartbeat] '+date);
+
+        if (timerId === null) {
+            timerId = setInterval(RequestUserinfo, 5000);
+        }
+
         if (this.props.showErrorOnJoin) {
             this.setState({
                 showError: true
@@ -351,6 +423,8 @@ class Prejoin extends Component<Props, State> {
         const hasExtraJoinButtons = Boolean(extraButtonsToRender.length);
         const { showJoinByPhoneButtons, showError } = this.state;
 
+        console.log("[heartbeat] render");
+
         return (
             <PreMeetingScreen
                 showDeviceStatus = { deviceStatusVisible }
@@ -423,6 +497,9 @@ class Prejoin extends Component<Props, State> {
 function mapStateToProps(state): Object {
     const name = getDisplayName(state);
     const showErrorOnJoin = isDisplayNameRequired(state) && !name;
+  
+    s_nickname = name;
+    roomname = getRoomName(state);
 
     return {
         name,

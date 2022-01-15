@@ -200,7 +200,17 @@ export function initPrejoin(tracks: Object[], errors: Object) {
     return async function(dispatch: Function) {
         dispatch(setPrejoinDeviceErrors(errors));
         dispatch(prejoinInitialized());
-
+        // if ( checkBlurSupport() ) {
+        //     dispatch(backgroundEnabled(true));
+        //     dispatch(
+        //         setVirtualBackground({
+        //             backgroundType: 'blur',
+        //             enabled: true,
+        //             blurValue: 25,
+        //             selectedThumbnail: 'none'
+        //         })
+        //     );
+        // }
         tracks.forEach(track => dispatch(trackAdded(track)));
     };
 }

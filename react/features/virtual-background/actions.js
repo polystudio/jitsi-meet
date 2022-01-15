@@ -1,6 +1,7 @@
 // @flow
 
 import { createVirtualBackgroundEffect } from '../stream-effects/virtual-background';
+import { createShaderEffect } from '../stream-effects/shader';
 
 import { BACKGROUND_ENABLED, SET_VIRTUAL_BACKGROUND, VIRTUAL_BACKGROUND_TRACK_CHANGED } from './actionTypes';
 import logger from './logger';
@@ -14,15 +15,26 @@ import logger from './logger';
  */
 export function toggleBackgroundEffect(options: Object, jitsiTrack: Object) {
     return async function(dispatch: Object => Object, getState: () => any) {
+        console.log("toggleBackgoundEffect::");
+        console.log(options);
         await dispatch(backgroundEnabled(options.enabled));
         await dispatch(setVirtualBackground(options));
-        const state = getState();
+        const state = getState(); 
+        console.log(state);
         const virtualBackground = state['features/virtual-background'];
+        console.log(virtualBackground);
 
         if (jitsiTrack) {
             try {
                 if (options.enabled) {
-                    await jitsiTrack.setEffect(await createVirtualBackgroundEffect(virtualBackground, dispatch));
+                    if (options.selectedThumbnail == "cartoon-image") {
+                        await jitsiTrack.setEffect(await createShaderEffect(virtualBackground, dispatch));
+                        // Reloading jitsiTrack to fix ios bug blacking out camera
+                        await jitsiTrack.mute();
+                        await jitsiTrack.unmute();                        
+                    } else {
+                        await jitsiTrack.setEffect(await createVirtualBackgroundEffect(virtualBackground, dispatch));
+                    }
                 } else {
                     await jitsiTrack.setEffect(undefined);
                     dispatch(backgroundEnabled(false));
